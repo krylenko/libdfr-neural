@@ -17,7 +17,7 @@
 #ifndef LIBDFR_NEURAL_H
 #define LIBDFR_NEURAL_H
 
-#include "libdfr-matrix.h"
+#include "..\libdfr-matrix\libdfr-matrix.h"
 
 class NeuralNet
 {

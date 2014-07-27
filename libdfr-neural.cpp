@@ -20,7 +20,7 @@
 #include <time.h>
 
 #include "libdfr-neural.h"
-#include "libdfr-matrix.h"
+#include "..\libdfr-matrix\libdfr-matrix.h"
 
 // constructor
 NeuralNet::NeuralNet(const int& numIn, const int& numHidden, const int& numOut)
@@ -150,7 +150,7 @@ void NeuralNet::computeError_(const int& epoch)
 {
 
 	rawError_ = 0.0;	
-	rawError_ = ( (trainingOut-computedOut)*(trainingOut-computedOut) ).sum();
+	rawError_ = ( (trainingOut-computedOut)*(trainingOut-computedOut).T() ).sum();
 	MSE_ = (0.5)*(rawError_)/epoch;
 
 }
