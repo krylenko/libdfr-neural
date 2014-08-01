@@ -28,7 +28,8 @@ class NeuralNet
 		int numInput_;
 		int numHidden_;
 		int numOutput_;
-		
+		enum {TRAIN, RUN};
+    
 		// error variables
 		double rawError_;
 		double MSE_;
@@ -42,11 +43,11 @@ class NeuralNet
 
 		// network computation functions
 		void randomizeWeights_();
-		void computeOutput_();
-		void computeError_(const int& epoch);
+		void computeOutput_(const int& type);
+		void computeError_();
 		void backprop_();
 		void updateWeights_();
-
+    
 	public:
 
 		NeuralNet(	const int& numIn,	// constructor
@@ -54,30 +55,31 @@ class NeuralNet
 					const int& numOut);
 		//~NeuralNet();					// destructor; may not need
 	
-		Matrix input;			// network arrays
+    // network arrays
+		Matrix input;			
 		Matrix weightsHidden;
 		Matrix weightsOut;
 		Matrix trainingOut;
 		Matrix computedOut;
 		
-		double learningRate;   	// controls rate of weight updates
-								// range [0,1]
+    // controls rate of weight updates
+    // range [0,1]
+		double learningRate;   	
 
-		double momentum;        // controls how much of the previous weight update
-								// is added to the current update
-								// range [0,1]
+    // controls how much of the previous weight update
+    // is added to the current update
+		// range [0,1]
+		double momentum;        
 
-		double decayRate;      	//controls how fast the weights decay during update
-								//essentially a "forgetting" term
-								//range [0,1]
-
-		// network I/O
-		void putInput(const Matrix& netInput);
-		void putTraining(const Matrix& training);
+    // controls how fast the weights decay during update
+		// essentially a "forgetting" term
+		// range [0,1]
+		double decayRate;      	
 								
 		// main network functions
-		Matrix activate();
-		double train(const int& epoch);
+		double train(const Matrix& data, const Matrix& labeledOut);
+		void run(const Matrix& data);
+    int load(const char fileWeightsHidden[], const char fileWeightsOut[]);
 								
 };
 

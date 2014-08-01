@@ -53,49 +53,56 @@ NeuralNet::NeuralNet(const int& numIn, const int& numHidden, const int& numOut)
 	return;
 }
 
-// activate net
-Matrix NeuralNet::activate()
-{
-	computeOutput_();
-	return computedOut;
-}
-
-// train neural net with one data point
-double NeuralNet::train(const int& epoch)
+// train neural net (online, one data point at a time)
+double NeuralNet::train(const Matrix& data, const Matrix& labeledOut)
 {
 
-	computeError_(epoch);
-	backprop_();
-	updateWeights_();
+  // check dimensions
+	if( data.cols() != numInput_ ||
+      labeledOut.cols() != numOutput_ )
+		exit;
+
+	// copy data to input neurons
+	for(int i=1;i<numInput_+1;i++)
+		input[0][i] = data[0][i-1];
+
+	// copy correct outputs to trainingOut matrix
+	trainingOut = labeledOut;
+  
+  // train the net
+  computeOutput_(TRAIN);   // process data input through network
+	computeError_();    // (updates MSE_)
+	backprop_();        // run backprop to compute weight updates
+	updateWeights_();   // apply weight updates
 
 	return MSE_;
+  
 }
 
-//direct input to network
-void NeuralNet::putInput(const Matrix& netInput)
+// run neural net (one data point at a time)
+void NeuralNet::run(const Matrix& data)
 {
 
-	// check dimensions
-	if( netInput.cols() != numInput_ )
+  // check dimensions
+	if( data.cols() != numInput_ )
 		exit;
 
-	// copy matrix to input
+	// copy data to input neurons
 	for(int i=1;i<numInput_+1;i++)
-		input[0][i] = netInput[0][i-1];
-
+		input[0][i] = data[0][i-1];
+  
+  // train the net
+  computeOutput_(RUN);   // process data input through network
+  
 }
 
-//direct training outputs to network
-void NeuralNet::putTraining(const Matrix& training)
+// load previously trained network weights
+// need to add error checking on network size, file pointers
+// should also provide ability to load learning rate, network size
+int NeuralNet::load(const char fileWeightsHidden[], const char fileWeightsOut[])
 {
-
-	// check dimensions
-	if( training.cols() != numOutput_ )
-		exit;
-
-	// copy matrix to trainingOut matrix
-	trainingOut = training;
-
+  weightsHidden.fromFile(fileWeightsHidden);
+  weightsOut.fromFile(fileWeightsOut);
 }
 
 //randomize hidden, bias, and output neuron weights in the range [-r,r]
@@ -109,49 +116,75 @@ void NeuralNet::randomizeWeights_()
 	Matrix wH_temp(weightsHidden);
 	wH_temp.random(2*r);
 	weightsHidden = wH_temp-r;
-	//Matrix wO_temp = weightsOut.random(2*r);
-	//weightsOut = wO_temp-r;
+	Matrix wO_temp(weightsOut); 
+  wO_temp.random(2*r);
+	weightsOut = wO_temp-r;
 	
 }
 
 //propagate input through the network to compute output values
-void NeuralNet::computeOutput_()
+void NeuralNet::computeOutput_(const int& type)
 {
 
 	int i,j;
-
-    //calculate outputs of each neuron in the first layer
-    for(i=1;i<numHidden_+1;i++)
-	{
+  double dropoutProbHidden = 0.5;
+  double dropoutProbInput = 0.2;
+  double randNum = 0.;
+  double temp = 0.;
+  
+  // calculate outputs of each neuron in the first layer
+  // use dropout on input layer
+  for(i=1;i<numHidden_+1;i++)
+  {
 		hiddenOut_[0][i] = 0;                //init output
 		
-		for(j=0;j<numInput_+1;j++)      //take input, offset by 1 b/c of bias neuron
-			hiddenOut_[0][i] += input[0][j] * weightsHidden[j][i-1]; //add inputs
-
+    //take input, offset by 1 b/c of bias neuron
+		for(j=0;j<numInput_+1;j++){      
+   
+      randNum = (double)rand()/(double)RAND_MAX;
+        temp = input[0][j];
+      
+      if(TRAIN == type)
+        hiddenOut_[0][i] += temp * weightsHidden[j][i-1]; //add inputs
+      else
+        hiddenOut_[0][i] += temp * 0.5 * weightsHidden[j][i-1];
+        
+    }
+        
 		hiddenOut_[0][i] = tanh( hiddenOut_[0][i] ); //pass sum to activation function
 	}
 
-	//carry forward to output layer (which is linear)
+  //hiddenOut_.print();
+  
+	// carry forward to output layer (which is linear)
+  // use dropout when computing final output
 	for(i=0;i<numOutput_;i++)
 	{
 		computedOut[0][i] = 0;
 		
-		for(j=0;j<numHidden_+1;j++)
-			computedOut[0][i] += hiddenOut_[0][j]*weightsOut[j][i]; //sum weights on inputs to this neuron
+		for(j=0;j<numHidden_+1;j++){
+    
+      randNum = (double)rand()/(double)RAND_MAX;
+      if(randNum > dropoutProbHidden)
+          temp = hiddenOut_[0][j];
+      else
+          temp = 0.;
+          
+      computedOut[0][i] += temp * weightsOut[j][i]; //sum weights on inputs to this neuron
+      
+    }
 
 		computedOut[0][i] = tanh( computedOut[0][i] ); //pass sum to activation function
 
 	}
-	
+	//computedOut.print();
 }
 
 //compute mean squared error between computed output and trained output
-void NeuralNet::computeError_(const int& epoch)
+void NeuralNet::computeError_()
 {
 
-	rawError_ = 0.0;	
-	rawError_ = ( (trainingOut-computedOut)*(trainingOut-computedOut).T() ).sum();
-	MSE_ = (0.5)*(rawError_)/epoch;
+	MSE_ = 0.5 * ( (trainingOut-computedOut)*(trainingOut-computedOut).T() ).sum();
 
 }
 
@@ -163,6 +196,7 @@ void NeuralNet::backprop_()
 
 	//compute error of output nodes
 	deltaOut_ = trainingOut - computedOut;
+  //deltaOut_.print();
 
 	//compute deltas for hidden layer
 	deltaHidden_.zeros();
@@ -192,7 +226,8 @@ void NeuralNet::updateWeights_()
 						learningRate * decayRate * weightsHidden[i][j];
 						
 			//calculate new weight based on weight change and momentum
-			weightsHidden[i][j] += ( W_delta + momentum * weightUpdateHidden_[i][j] );
+      weightsHidden[i][j] += ( W_delta + momentum * weightUpdateHidden_[i][j] );
+        
 			//save weight change for use in next update
 			weightUpdateHidden_[i][j] = W_delta;
 		}
@@ -208,4 +243,6 @@ void NeuralNet::updateWeights_()
 											
 			weightUpdateOut_[i][j] = W_delta;
 		}
+    //weightsHidden.print();
+    //weightsOut.print();
 }
