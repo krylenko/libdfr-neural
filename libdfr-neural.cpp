@@ -115,7 +115,7 @@ void NeuralNet::randomizeWeights_()
 
 	Matrix wH_temp(weightsHidden);
 	wH_temp.random(2*r);
-	weightsHidden = wH_temp-r;
+  weightsHidden = wH_temp-r;
 	Matrix wO_temp(weightsOut); 
   wO_temp.random(2*r);
 	weightsOut = wO_temp-r;
