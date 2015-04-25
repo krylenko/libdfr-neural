@@ -2,10 +2,12 @@ libdfr-neural
 =================
 
 neural network library  
-daniel ford 2014  
+daniel ford 2015  
 
 libdfr-neural is a C++ library that implements fully connected neural networks
 with backpropagation for training  
-libdfr-neural.h defines the basic NeuralNet class and the available methods  
 
-dependencies: libdfr-matrix
+networks are composable with as many layers as desired
+current layer types: linear, sigmoid, hyperbolic tangent, softmax
+
+see the XOR test wrapper for example usage
