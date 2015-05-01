@@ -8,6 +8,7 @@
 NeuralTanhLayer::NeuralTanhLayer(const int inputs, const int nodes)
 : NeuralLayer(inputs, nodes) 
 {
+  m_type = TANH;
 }
 
 NeuralTanhLayer::~NeuralTanhLayer()

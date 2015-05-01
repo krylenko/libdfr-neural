@@ -8,6 +8,7 @@
 NeuralSigmoidLayer::NeuralSigmoidLayer(const int inputs, const int nodes)
 : NeuralLayer(inputs, nodes) 
 {
+  m_type = SIGMOID;
 }
 
 NeuralSigmoidLayer::~NeuralSigmoidLayer()

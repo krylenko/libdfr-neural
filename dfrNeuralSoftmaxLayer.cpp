@@ -8,6 +8,7 @@
 NeuralSoftmaxLayer::NeuralSoftmaxLayer(const int inputs, const int nodes)
 : NeuralLayer(inputs, nodes) 
 {
+  m_type = SOFTMAX;
 }
 
 NeuralSoftmaxLayer::~NeuralSoftmaxLayer()

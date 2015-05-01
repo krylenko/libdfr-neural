@@ -6,6 +6,7 @@
 NeuralLinearLayer::NeuralLinearLayer(const int inputs, const int nodes)
 : NeuralLayer(inputs, nodes) 
 {
+  m_type = LINEAR;
 }
 
 NeuralLinearLayer::~NeuralLinearLayer()

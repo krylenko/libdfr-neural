@@ -4,6 +4,10 @@
 #define __DFRNEURALNET_H__
 
 #include "dfrNeuralLayer.h"
+#include "dfrNeuralLinearLayer.h"
+#include "dfrNeuralTanhLayer.h"
+#include "dfrNeuralSigmoidLayer.h"
+#include "dfrNeuralSoftmaxLayer.h"
 
 // output enum to create correct training data
 // use SCALAR for tanh/sigmoid output layers, 
@@ -24,7 +28,11 @@ class NeuralNet
     
     int numLayers() { return m_layers.size(); }
     
-    void setParams(const double& rate, const double& momentum, const double& decay  );
+    void setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType);
+
+    bool saveNet( const char * filename=nullptr );
+
+    bool loadNet( const char * filename );
   
   private:
 
@@ -32,6 +40,7 @@ class NeuralNet
     double m_learningRate;
     double m_momentum;
     double m_weightDecay;
+    unsigned int m_outType;
     
     std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
     
@@ -44,12 +53,3 @@ class NeuralNet
 };
 
 #endif
-
-// @todo
-// 
-// randomize weights to [-r,r],
-// r = 1/sqrt(numInputs)
-//
-// add dropout
-//
-// 

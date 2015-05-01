@@ -5,10 +5,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include "dfrNeuralNet.h"
-#include "dfrNeuralLinearLayer.h"
-#include "dfrNeuralTanhLayer.h"
-#include "dfrNeuralSigmoidLayer.h"
-#include "dfrNeuralSoftmaxLayer.h"
 
 std::vector<double> XOR_training();
 std::vector<double> softmax_XOR_training();
@@ -26,14 +22,12 @@ int main(int argc, char *argv[])
 
   NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(16,2);
   network.addLayer( pOutputLayer );
-  
-  // set output type:
+
+  // set learning rate, momentum, decay rate, output type
   // SCALAR = tanh or sigmoid output layer (use one output neuron)
   // PROB = softmax output layer, 1-of-C output encoding (use two output neurons)
   const unsigned int outType = PROB;
-
-  // set learning rate, momentum, decay rate
-  network.setParams(0.2, 0, 0);
+  network.setParams(0.2, 0, 0, outType);
 
   const unsigned int iters = 1000;
   const unsigned int testers = 2500;
@@ -108,7 +102,7 @@ int main(int argc, char *argv[])
   }  
   
   std::cout << std::endl << "accuracy: " << 100.0 * rightCount/testers << "%" << std::endl;
-  
+
   return 0;
 
 }
