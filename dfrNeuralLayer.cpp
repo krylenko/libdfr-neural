@@ -38,13 +38,15 @@ std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& input
 {
   assert( m_numInputs==inputs.size() );
   std::vector<double> outputs(m_numNodes,0.0);
-  
+
   for(int j=0;j<m_numNodes;++j)
   {
     outputs[j] = m_biases[j]*m_weights[0][j];
     for(int i=1;i<m_numInputs+1;++i)
     {
-      outputs[j] += inputs[i-1]*m_weights[i][j];
+      double dropoutRand = rand()/(double)RAND_MAX;
+      if(dropoutRand > 0.5)
+        outputs[j] += inputs[i-1]*m_weights[i][j];
     }
   }
   
