@@ -160,10 +160,12 @@ bool NeuralNet::saveNet( const char * filename )
     fname << "netsave_" << localnow->tm_mon+1 << "-" << localnow->tm_mday << "-" << localnow->tm_year+1900 << "_";
     fname << localnow->tm_hour << "-" << localnow->tm_min << "-" << localnow->tm_sec;
     fname << ".data";
-    filename = fname.str().c_str();
+    temp = fname.str().c_str();
   }
-  
-  outp.open(filename, std::ios::out);
+  else
+    temp = filename;
+
+  outp.open(temp, std::ios::out);
 
   // save info about network
   outp << nLayers << "\t";
