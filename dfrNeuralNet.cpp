@@ -6,6 +6,7 @@
 #include <fstream>
 #include <ctime>
 #include <sstream>
+#include <cmath>
 
 NeuralNet::NeuralNet()
 : m_layers(0)
@@ -255,6 +256,9 @@ bool NeuralNet::loadNet( const char * filename )
       break;
       case(SOFTMAX):
       pHiddenLayer = new NeuralSoftmaxLayer(inputs,nodes);
+      break;
+      case(RECTLIN):
+      pHiddenLayer = new NeuralRectlinLayer(inputs,nodes);
       break;
     }
     pHiddenLayer->loadWeights(weights);

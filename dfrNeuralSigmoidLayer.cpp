@@ -22,7 +22,7 @@ std::vector<double> NeuralSigmoidLayer::computeOutputs(const std::vector<double>
   for(std::vector<double>::iterator it=outs.begin();it!=outs.end();++it)
   { 
     // logistic function 
-    *it = 1/(1+exp(-1.0*(*it)));
+    *it = 1.0/(1.0+exp(-1.0*(*it)));
   }
   m_output = outs;
   return outs;

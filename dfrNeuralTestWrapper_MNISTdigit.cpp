@@ -12,11 +12,11 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          300
+#define HIDDEN          50
 #define OUTPUT          10
-#define DATA_SIZE       2000         // max in file is 42001
-#define TRAIN_SIZE      250
-#define TEST_SIZE       100
+#define DATA_SIZE       40000         // max in file is 42001
+#define TRAIN_SIZE      10000
+#define TEST_SIZE       20000
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -42,18 +42,18 @@ int main()
   std::cout << "initializing network..." << "\t \t";
   NeuralNet DigitNet;
 
-  NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT,HIDDEN);
+  NeuralLayer * pHiddenLayer1 = new NeuralRectlinLayer(INPUT,HIDDEN);
   DigitNet.addLayer( pHiddenLayer1 );
-  NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN,OUTPUT);
+  NeuralLayer * pOutputLayer = new NeuralSigmoidLayer(HIDDEN,OUTPUT);
   DigitNet.addLayer( pOutputLayer );
 
   // set output type:
   // SCALAR = tanh or sigmoid output layer (use one output neuron)
-  // PROB = softmax output layer, 1-of-N output encoding (use two output neurons)
+  // PROB = softmax output layer, 1-of-N output encoding (use n output neurons, one per class)
   const unsigned int outType = PROB;
 
   // set learning rate, momentum, decay rate
-  const double learningRate = 0.15;
+  const double learningRate = 0.05;
   const double momentum =     0.0;
   const double decayRate =    0.0;
   DigitNet.setParams(learningRate,momentum,decayRate,outType);
@@ -148,7 +148,7 @@ void buildData( const std::vector< std::vector<double> >& allData,
   {
     rndIdx = shuffle(trainSize);
     for(int j=0;j<INPUT+1;++j)
-      trainData[i][j] = allData[rndIdx][j];
+      trainData[i][j] = allData[rndIdx][j]/255.0;
   }
 
   // extract test data
@@ -156,7 +156,7 @@ void buildData( const std::vector< std::vector<double> >& allData,
   {
     rndIdx = shuffle(testSize);
     for(int j=0;j<INPUT+1;++j)
-      testData[i][j] = allData[rndIdx][j];
+      testData[i][j] = allData[rndIdx][j]/255.0;
   }
   
 }

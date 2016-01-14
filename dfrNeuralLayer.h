@@ -6,7 +6,7 @@
 #include <vector>
 
 // layer type enum
-enum{LINEAR,TANH,SIGMOID,SOFTMAX};
+enum{LINEAR,TANH,SIGMOID,SOFTMAX,RECTLIN};
 
 enum{FALSE,TRUE};
 

@@ -8,6 +8,7 @@
 #include "dfrNeuralTanhLayer.h"
 #include "dfrNeuralSigmoidLayer.h"
 #include "dfrNeuralSoftmaxLayer.h"
+#include "dfrNeuralRectlinLayer.h"
 
 // output enum to create correct training data
 // use SCALAR for tanh/sigmoid output layers, 
