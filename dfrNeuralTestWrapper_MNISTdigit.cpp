@@ -12,11 +12,11 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          20
+#define HIDDEN          100
 #define OUTPUT          10
 #define DATA_SIZE       40000         // max in file is 42001
-#define TRAIN_SIZE      10000
-#define TEST_SIZE       20000
+#define TRAIN_SIZE      20000
+#define TEST_SIZE       5000
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -33,17 +33,25 @@ int main()
   int truecnt = 0;
   int times,timed;
   
-  // print useful info for reference
-  std::cout << "\n" << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
   // init random number generator
   srand((int)time(NULL));  
 
   // create network
-  std::cout << "initializing network..." << "\t \t";
+  std::cout << std::endl << "initializing network..." << "\t \t";
   NeuralNet DigitNet;
 
-  NeuralLayer * pHiddenLayer1 = new NeuralRectlinLayer(INPUT,HIDDEN);
-  DigitNet.addLayer( pHiddenLayer1 );
+  DigitNet.addLayer( new NeuralRectlinLayer(INPUT,HIDDEN) );
+
+  /*
+  int numHidden = 2;
+  numHidden /= 2;
+  for(auto i=0;i<numHidden;++i)
+  {
+    DigitNet.addLayer( new NeuralRectlinLayer(HIDDEN,HIDDEN*2) );
+    DigitNet.addLayer( new NeuralRectlinLayer(HIDDEN*2,HIDDEN) );
+  }
+  */
+
   NeuralLayer * pOutputLayer = new NeuralSigmoidLayer(HIDDEN,OUTPUT);
   DigitNet.addLayer( pOutputLayer );
 
@@ -59,6 +67,10 @@ int main()
   DigitNet.setParams(learningRate,momentum,decayRate,outType);
 
   std::cout << "done" << std::endl;
+
+  // print useful info for reference
+  std::cout << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
+  std::cout << "hidden layers: " << "\t \t \t" << DigitNet.numLayers()-2 << std::endl << std::endl;
   
   // load training and test data
   std::cout << "loading data..." << "\t \t \t";
@@ -77,7 +89,7 @@ int main()
   std::cout << "\n" << "training examples: " << "\t \t" << TRAIN_SIZE << std::endl;
   std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
   std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
-  std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl;
+  std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl << std::endl;
   std::cout << "training network..." << "\t \t";
   for(int i=0;i<TRAIN_SIZE;++i)
   {
@@ -88,8 +100,10 @@ int main()
     
     std::vector<double> outputs = DigitNet.runNet(data);
     error = DigitNet.trainNet(data,nLabel,outType);    // train net, return MSE
+    std::cout << error << std::endl;
 
     // decode output and compare to correct output 
+    //std::cout << label << " ... " << std::endl;
     if( decode(outputs) == (int)label )
         truecnt++;    
   }
@@ -115,7 +129,7 @@ int main()
    
     std::vector<double> outputs = DigitNet.runNet(data);    // run net
 
-    // decode output and compare to correct output 
+    // decode output and compare to correct output
     if( decode(outputs) == (int)label )
         truecnt++;    
     
@@ -126,7 +140,7 @@ int main()
   times=timed-times;
   std::cout << "done" << std::endl;
   std::cout << "testing time: " << "\t \t \t" << times << " seconds " << std::endl;
-  std::cout << "test accuracy: " << "\t \t \t" << truecnt*100./TEST_SIZE << "% " << std::endl;
+  std::cout << "test accuracy: " << "\t \t \t" << truecnt*100./TEST_SIZE << "% " << std::endl << std::endl;
   
   // save weights to reuse net in the future
   DigitNet.saveNet();
@@ -146,9 +160,12 @@ void buildData( const std::vector< std::vector<double> >& allData,
   // extract training data
   for(int i=0;i<trainSize;++i)
   {
-    rndIdx = shuffle(trainSize);
+    rndIdx = shuffle(trainSize);    
     for(int j=0;j<INPUT+1;++j)
-      trainData[i][j] = allData[rndIdx][j]/255.0;
+      if( j == 0 )
+        trainData[i][j] = allData[rndIdx][j];
+      else
+        trainData[i][j] = allData[rndIdx][j]/255.0;
   }
 
   // extract test data
@@ -156,7 +173,10 @@ void buildData( const std::vector< std::vector<double> >& allData,
   {
     rndIdx = shuffle(testSize);
     for(int j=0;j<INPUT+1;++j)
-      testData[i][j] = allData[rndIdx][j]/255.0;
+      if( j == 0 )
+        testData[i][j] = allData[rndIdx][j];
+      else
+        testData[i][j] = allData[rndIdx][j]/255.0;
   }
   
 }
@@ -181,8 +201,9 @@ std::vector<double> encode(const int& digit)
 int decode(std::vector<double>& netOut)
 {
   int digit = 0; double tmp = netOut[0];
-  for(int i = 0;i<10;++i)
+  for(int i = 0;i<OUTPUT;++i)
   {
+    //std::cout << netOut[i] << " /// ";
     if(netOut[i] > tmp)
     {
       digit = i;
