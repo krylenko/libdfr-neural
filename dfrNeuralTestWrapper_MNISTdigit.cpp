@@ -12,7 +12,7 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          50
+#define HIDDEN          20
 #define OUTPUT          10
 #define DATA_SIZE       40000         // max in file is 42001
 #define TRAIN_SIZE      10000
