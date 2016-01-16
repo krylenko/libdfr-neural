@@ -45,7 +45,7 @@ std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& input
     for(int i=1;i<m_numInputs+1;++i)
     {
       double dropoutRand = rand()/(double)RAND_MAX;
-      if(dropoutRand > 0.5)
+      //if(dropoutRand > 0.5)
         outputs[j] += inputs[i-1]*m_weights[i][j];
     }
   }
@@ -57,7 +57,7 @@ std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& input
 
 std::vector<double> NeuralLayer::computeDeltas(const std::vector<double>& error, const std::vector<std::vector<double> >& nextWeights)
 {
-  static unsigned int first = 1;
+  static bool first = true;
   int nextLayerOuts;
   
   if(first)
@@ -76,7 +76,7 @@ std::vector<double> NeuralLayer::computeDeltas(const std::vector<double>& error,
         deltas[j] += error[i+1] * nextWeights[j][i];
     }
   }
-  first = 0;
+  first = false;
   return deltas;
 }
 
@@ -92,7 +92,7 @@ void NeuralLayer::updateWeights(const std::vector<double>& prevOut, const std::v
       else
           prev = prevOut[i-1];
       double deltaW = learningRate * ( deltas[j] * prev - decayRate * m_weights[i][j] );
-      m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
+      m_weights[i][j] -= deltaW + momentum * m_nextDeltas[i][j];
       m_nextDeltas[i][j] = deltaW;
     }
   }

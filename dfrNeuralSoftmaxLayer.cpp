@@ -17,16 +17,24 @@ NeuralSoftmaxLayer::~NeuralSoftmaxLayer()
 
 std::vector<double> NeuralSoftmaxLayer::computeOutputs(const std::vector<double>& inputs)
 {
+  
   std::vector<double> outs(m_numNodes);
   outs = NeuralLayer::computeOutputs(inputs);
+
+  double C = outs[0];
+  for(auto i=0;i<outs.size();++i)
+  {
+    if( outs[i] > C ) C = outs[i];  
+  }
+
   double normalizer = 0.0;
   for(std::vector<double>::iterator it=outs.begin();it!=outs.end();++it)
   {
-    normalizer += exp(*it);
+    normalizer += exp(*it-C);
   }
   for(std::vector<double>::iterator it=outs.begin();it!=outs.end();++it)
   {  
-    *it = exp(*it)/normalizer;
+    *it = exp(*it-C)/normalizer;
   }
   m_output = outs;
   return outs;
@@ -44,7 +52,7 @@ void NeuralSoftmaxLayer::updateWeights(const std::vector<double>& prevOut, const
       else
         prev = prevOut[i-1];
       double deltaW = learningRate * ( deltas[j] * prev - ( decayRate * m_weights[i][j] ) );
-      m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
+      m_weights[i][j] -= deltaW + momentum * m_nextDeltas[i][j];
       m_nextDeltas[i][j] = deltaW;                  
     }
   }

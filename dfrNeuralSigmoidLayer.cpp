@@ -42,7 +42,7 @@ void NeuralSigmoidLayer::updateWeights(const std::vector<double>& prevOut, const
       double deltaW = learningRate * ( deltas[j] * ( m_output[j] * (1.0 - m_output[j]) ) * 
                         prev - ( decayRate * m_weights[i][j] ) );
     
-      m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
+      m_weights[i][j] -= deltaW + momentum * m_nextDeltas[i][j];
       m_nextDeltas[i][j] = deltaW;                  
     }
   }

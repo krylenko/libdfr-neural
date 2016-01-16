@@ -45,6 +45,7 @@ std::vector<double> NeuralNet::minusVec(std::vector<double> one, std::vector<dou
 	for(unsigned int i=0;i<one.size();++i)
 	{
 		result.push_back(one[i]-two[i]);
+        std::cout << i << " : " << one[i] << " | " << two[i] << " | " << result[i] << std::endl;
 	}
 	return result;
 }
@@ -94,6 +95,8 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
       prevOut = m_layers[ i-1-1 ]->retrieveOutputs();
     if( i <= 1)
       prevOut = data;
+    //for(auto m=0; m<delta.size(); ++m)    
+    //    std::cout << " > D > " << delta[m] << " >> ";
     m_layers[i-1]->updateWeights( prevOut,delta,m_learningRate,m_momentum,m_weightDecay );
     error = delta;
   
@@ -122,7 +125,7 @@ std::vector<double> NeuralNet::computeOutput(const std::vector<double> & inputs)
 
 std::vector<double> NeuralNet::computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput)
 {
-  return minusVec(labeledOutput,netOutput);
+  return minusVec(netOutput,labeledOutput);
 }
 
 double NeuralNet::logloss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput)
@@ -131,10 +134,11 @@ double NeuralNet::logloss(const std::vector<double>& netOutput, const std::vecto
 
   for(unsigned int i=0;i<netOutput.size();++i)
   {
-    logloss -= log(netOutput[i])*labeledOutput[i]; 
+    logloss += ( labeledOutput[i]*log(netOutput[i]) + (1.0-labeledOutput[i])*log(1.0-netOutput[i]) );
+    //logloss -= log(netOutput[i])*labeledOutput[i]; 
   }
 
-  return logloss;
+  return -logloss;
 }
 
 // save network

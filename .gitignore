@@ -217,3 +217,4 @@ pip-log.txt
 #neural-specific files
 *.data
 mnist
+xor

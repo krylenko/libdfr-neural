@@ -14,9 +14,9 @@
 #define INPUT           FRAMESIZE
 #define HIDDEN          100
 #define OUTPUT          10
-#define DATA_SIZE       40000         // max in file is 42001
-#define TRAIN_SIZE      20000
-#define TEST_SIZE       5000
+#define DATA_SIZE       5000         // max in file is 42001
+#define TRAIN_SIZE      4000
+#define TEST_SIZE       500
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -24,6 +24,7 @@ int decode(std::vector<double>& netOut);
 void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData, const int& trainSize, std::vector< std::vector<double> >& testData, const int& testSize);
 int shuffle(const int& size);
 void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]);
+void show(const std::vector<double>& data);
 
 int main()
 {
@@ -40,7 +41,7 @@ int main()
   std::cout << std::endl << "initializing network..." << "\t \t";
   NeuralNet DigitNet;
 
-  DigitNet.addLayer( new NeuralRectlinLayer(INPUT,HIDDEN) );
+  DigitNet.addLayer( new NeuralTanhLayer(INPUT,HIDDEN) );
 
   /*
   int numHidden = 2;
@@ -52,16 +53,15 @@ int main()
   }
   */
 
-  NeuralLayer * pOutputLayer = new NeuralSigmoidLayer(HIDDEN,OUTPUT);
-  DigitNet.addLayer( pOutputLayer );
+  DigitNet.addLayer( new NeuralLinearLayer(HIDDEN,OUTPUT) );
 
   // set output type:
   // SCALAR = tanh or sigmoid output layer (use one output neuron)
   // PROB = softmax output layer, 1-of-N output encoding (use n output neurons, one per class)
-  const unsigned int outType = PROB;
+  const unsigned int outType = SCALAR;
 
   // set learning rate, momentum, decay rate
-  const double learningRate = 0.05;
+  const double learningRate = 0.01;
   const double momentum =     0.0;
   const double decayRate =    0.0;
   DigitNet.setParams(learningRate,momentum,decayRate,outType);
@@ -70,7 +70,7 @@ int main()
 
   // print useful info for reference
   std::cout << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
-  std::cout << "hidden layers: " << "\t \t \t" << DigitNet.numLayers()-2 << std::endl << std::endl;
+  std::cout << "hidden layers: " << "\t \t \t" << DigitNet.numLayers()-1 << std::endl << std::endl;
   
   // load training and test data
   std::cout << "loading data..." << "\t \t \t";
@@ -91,11 +91,15 @@ int main()
   std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
   std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl << std::endl;
   std::cout << "training network..." << "\t \t";
+
+  //for(int m=0;m<20;++m){
   for(int i=0;i<TRAIN_SIZE;++i)
   {
     std::vector<double> data = trainData[i];            // extract data point
     double label = data[0];                             // extract point label
     data.erase(data.begin());
+    std::cout << std::endl << std::endl;
+    //show(data);
     std::vector<double> nLabel = encode((int)label);    // encode to 1-of-N   
     
     std::vector<double> outputs = DigitNet.runNet(data);
@@ -107,7 +111,7 @@ int main()
     if( decode(outputs) == (int)label )
         truecnt++;    
   }
-
+  //}
   // stop timer and print out useful info
   timed=(int)time(NULL);
   times=timed-times;
@@ -230,3 +234,15 @@ void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]
     inp.close();
   }
 }
+
+void show(const std::vector<double>& data)
+{
+
+    std::cout << " > ";
+    for(auto i=0; i<data.size(); ++i)
+    {
+        std::cout << data[i] << " > ";
+    }
+    std::cout << std::endl;
+
+} 

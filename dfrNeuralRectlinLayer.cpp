@@ -39,10 +39,12 @@ void NeuralRectlinLayer::updateWeights(const std::vector<double>& prevOut, const
         prev = 1.0;
       else
         prev = prevOut[i-1];
-      double deltaW = learningRate * ( deltas[j] * (1.0 - ( m_output[j] * m_output[j] ) ) * 
-                        prev - ( decayRate * m_weights[i][j] ) );
-    
-      m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
+
+      double deltaW = 0.0;      
+      if( m_output[j] >= 0.0 )
+        deltaW = learningRate * ( deltas[j] * prev - decayRate * m_weights[i][j] ) ;    
+
+      m_weights[i][j] -= deltaW + momentum * m_nextDeltas[i][j];
       m_nextDeltas[i][j] = deltaW;                  
     }
   }
