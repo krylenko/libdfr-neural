@@ -12,11 +12,11 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          100
+#define HIDDEN          50
 #define OUTPUT          10
-#define DATA_SIZE       5000         // max in file is 42001
-#define TRAIN_SIZE      4000
-#define TEST_SIZE       500
+#define DATA_SIZE       42000         // max in file is 42001
+#define TRAIN_SIZE      30000
+#define TEST_SIZE       12000
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -43,15 +43,13 @@ int main()
 
   DigitNet.addLayer( new NeuralTanhLayer(INPUT,HIDDEN) );
 
-  /*
   int numHidden = 2;
   numHidden /= 2;
   for(auto i=0;i<numHidden;++i)
   {
-    DigitNet.addLayer( new NeuralRectlinLayer(HIDDEN,HIDDEN*2) );
-    DigitNet.addLayer( new NeuralRectlinLayer(HIDDEN*2,HIDDEN) );
+    DigitNet.addLayer( new NeuralTanhLayer(HIDDEN,HIDDEN*2) );
+    DigitNet.addLayer( new NeuralTanhLayer(HIDDEN*2,HIDDEN) );
   }
-  */
 
   DigitNet.addLayer( new NeuralLinearLayer(HIDDEN,OUTPUT) );
 

@@ -47,6 +47,8 @@ std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& input
       double dropoutRand = rand()/(double)RAND_MAX;
       //if(dropoutRand > 0.5)
         outputs[j] += inputs[i-1]*m_weights[i][j];
+      //else
+      //  outputs[j] = 0.0;
     }
   }
   
