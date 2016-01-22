@@ -99,3 +99,27 @@ void NeuralLayer::updateWeights(const std::vector<double>& prevOut, const std::v
     }
   }
 }
+
+// compute raw error of net outputs - training outputs
+std::vector<double> NeuralLayer::computeError(const std::vector<double>& netOutput, const std::vector<double>& trainingOutput)
+{
+  assert( netOutput.size()==trainingOutput.size() );
+  std::vector<double> result;
+	for(unsigned int i=0;i<netOutput.size();++i)
+	{
+		result.push_back(netOutput[i]-trainingOutput[i]);
+        //std::cout << i << " : " << netOutput[i] << " | " << trainingOutput[i] << " | " << result[i] << std::endl;
+	}
+	return result;
+}
+
+// compute MSE cost
+double NeuralLayer::computeCost(const std::vector<double>& error)
+{
+    double MSE = 0.0;
+    for(unsigned int i=0;i<error.size();++i)
+    {
+    MSE += error[i]*error[i];
+    }
+    return 0.5*MSE;   
+}

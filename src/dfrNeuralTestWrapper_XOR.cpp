@@ -19,11 +19,7 @@ int main(int argc, char *argv[])
 
   network.addLayer( new NeuralLinearLayer(16,1) );
 
-  // set learning rate, momentum, decay rate, output type
-  // SCALAR = tanh or sigmoid output layer (use one output neuron)
-  // PROB = softmax output layer, 1-of-C output encoding (use two output neurons)
-  const unsigned int outType = SCALAR;
-  network.setParams(0.2, 0, 0, outType);
+  network.setParams(0.2, 0, 0);
 
   const unsigned int iters = 1000;
   const unsigned int testers = 2500;
@@ -71,7 +67,7 @@ int main(int argc, char *argv[])
     // testing
     if( i>=iters )
     {
-		  std::vector<double> outputs = network.runNet(exor);
+      std::vector<double> outputs = network.runNet(exor);
       unsigned int out = 0;
       switch(outType)
       {

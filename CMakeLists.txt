@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g -Wall")
 
 project(libsrc/dfr-neural)
 
@@ -34,13 +34,13 @@ add_executable(mnist
     ${NEURAL_HEADERS}
 )
 
-SET(XOR_SRC
-    ${NEURAL_SRC}
-    src/dfrNeuralTestWrapper_XOR.cpp
-)
+#SET(XOR_SRC
+#    ${NEURAL_SRC}
+#    src/dfrNeuralTestWrapper_XOR.cpp
+#)
 
-add_executable(xor
-    ${XOR_SRC}
-    ${NEURAL_HEADERS}
-)
+#add_executable(xor
+#    ${XOR_SRC}
+#    ${NEURAL_HEADERS}
+#)
    

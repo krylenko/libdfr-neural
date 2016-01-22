@@ -34,6 +34,10 @@ class NeuralLayer
     
     virtual void loadWeights(const std::vector<std::vector<double> > newWeights) {m_weights=newWeights;}
 
+    std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& trainingOutput);
+
+    virtual double computeCost(const std::vector<double>& error);
+
     virtual unsigned int getType() {return m_type;}
 
   protected:

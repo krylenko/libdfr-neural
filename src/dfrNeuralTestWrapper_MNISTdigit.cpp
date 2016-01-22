@@ -12,11 +12,11 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          50
+#define HIDDEN          100
 #define OUTPUT          10
-#define DATA_SIZE       42000         // max in file is 42001
-#define TRAIN_SIZE      30000
-#define TEST_SIZE       12000
+#define DATA_SIZE       3000         // max in file is 42001
+#define TRAIN_SIZE      2500
+#define TEST_SIZE       1000
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -30,7 +30,6 @@ int main()
 {
 
   // init variables
-  double error = 0.;
   int truecnt = 0;
   int times,timed;
   
@@ -38,11 +37,11 @@ int main()
   srand((int)time(NULL));  
 
   // create network
-  std::cout << std::endl << "initializing network..." << "\t \t";
+  std::cout << std::endl << "initializing network... ";
   NeuralNet DigitNet;
 
   DigitNet.addLayer( new NeuralTanhLayer(INPUT,HIDDEN) );
-
+  /*
   int numHidden = 2;
   numHidden /= 2;
   for(auto i=0;i<numHidden;++i)
@@ -50,28 +49,23 @@ int main()
     DigitNet.addLayer( new NeuralTanhLayer(HIDDEN,HIDDEN*2) );
     DigitNet.addLayer( new NeuralTanhLayer(HIDDEN*2,HIDDEN) );
   }
-
+  */
   DigitNet.addLayer( new NeuralLinearLayer(HIDDEN,OUTPUT) );
-
-  // set output type:
-  // SCALAR = tanh or sigmoid output layer (use one output neuron)
-  // PROB = softmax output layer, 1-of-N output encoding (use n output neurons, one per class)
-  const unsigned int outType = SCALAR;
 
   // set learning rate, momentum, decay rate
   const double learningRate = 0.01;
   const double momentum =     0.0;
   const double decayRate =    0.0;
-  DigitNet.setParams(learningRate,momentum,decayRate,outType);
+  DigitNet.setParams(learningRate,momentum,decayRate);
 
   std::cout << "done" << std::endl;
 
   // print useful info for reference
-  std::cout << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
-  std::cout << "hidden layers: " << "\t \t \t" << DigitNet.numLayers()-1 << std::endl << std::endl;
+  std::cout << "hidden neurons, layers: " << HIDDEN << ", ";
+  std::cout << DigitNet.numLayers()-1 << std::endl << std::endl;
   
   // load training and test data
-  std::cout << "loading data..." << "\t \t \t";
+  std::cout << "loading data... ";
   std::vector< std::vector<double> > bigData( DATA_SIZE,std::vector<double>(INPUT+1,0.0) );
   loadFromFile(bigData,"../data/train.txt");
 
@@ -84,11 +78,11 @@ int main()
   // loop over training data points and train net
   // slice off first column of each row (example)
   times=(int)time(NULL);   // init time counter
-  std::cout << "\n" << "training examples: " << "\t \t" << TRAIN_SIZE << std::endl;
-  std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
-  std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
-  std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl << std::endl;
-  std::cout << "training network..." << "\t \t";
+  std::cout << "\n" << "training examples: " << TRAIN_SIZE << std::endl;
+  std::cout << "learning rate: " << learningRate << std::endl;
+  std::cout << "momentum: " << momentum << std::endl;
+  std::cout << "weight decay: " << decayRate << std::endl << std::endl;
+  std::cout << "training network... ";
 
   //for(int m=0;m<20;++m){
   for(int i=0;i<TRAIN_SIZE;++i)
@@ -96,16 +90,13 @@ int main()
     std::vector<double> data = trainData[i];            // extract data point
     double label = data[0];                             // extract point label
     data.erase(data.begin());
-    std::cout << std::endl << std::endl;
-    //show(data);
     std::vector<double> nLabel = encode((int)label);    // encode to 1-of-N   
     
     std::vector<double> outputs = DigitNet.runNet(data);
-    error = DigitNet.trainNet(data,nLabel,outType);    // train net, return MSE
-    std::cout << error << std::endl;
+    double error = DigitNet.trainNet(data,nLabel);    // train net, return MSE
+    //std::cout << error << std::endl;
 
     // decode output and compare to correct output 
-    //std::cout << label << " ... " << std::endl;
     if( decode(outputs) == (int)label )
         truecnt++;    
   }
@@ -114,13 +105,13 @@ int main()
   timed=(int)time(NULL);
   times=timed-times;
   std::cout << "done" << std::endl;
-  std::cout << "training time: " << "\t \t \t" << times << " seconds " << std::endl;
-  std::cout << "training accuracy: " << "\t \t" << truecnt*100./TRAIN_SIZE << "%" << std::endl;
+  std::cout << "training time: " << times << " seconds " << std::endl;
+  std::cout << "training accuracy: " << truecnt*100./TRAIN_SIZE << "%" << std::endl;
   
   // test net on test data
   times=(int)time(NULL);   // init time counter
-  std::cout << "\n" << "test points: " << "\t \t \t" << TEST_SIZE << std::endl;
-  std::cout << "testing network..." << "\t \t";
+  std::cout << "\n" << "test points: " << TEST_SIZE << std::endl;
+  std::cout << "testing network... ";
   truecnt = 0;
   for(int i=0;i<TEST_SIZE;++i)
   {
@@ -141,8 +132,8 @@ int main()
   timed=(int)time(NULL);
   times=timed-times;
   std::cout << "done" << std::endl;
-  std::cout << "testing time: " << "\t \t \t" << times << " seconds " << std::endl;
-  std::cout << "test accuracy: " << "\t \t \t" << truecnt*100./TEST_SIZE << "% " << std::endl << std::endl;
+  std::cout << "testing time: " << times << " seconds " << std::endl;
+  std::cout << "test accuracy: " << truecnt*100./TEST_SIZE << "% " << std::endl << std::endl;
   
   // save weights to reuse net in the future
   DigitNet.saveNet();

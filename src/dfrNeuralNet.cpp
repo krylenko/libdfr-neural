@@ -13,7 +13,6 @@ NeuralNet::NeuralNet()
 , m_learningRate(0.0)
 , m_momentum(0.0)
 , m_weightDecay(0.0)
-, m_outType(SCALAR)
 {
 }
 
@@ -30,57 +29,25 @@ void NeuralNet::addLayer(NeuralLayer * layer)
   m_layers.push_back(layer);
 }
 
-void NeuralNet::setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType)
+void NeuralNet::setParams(const double& rate, const double& momentum, const double& decay)
 {
   m_learningRate = rate;
   m_weightDecay = decay;
   m_momentum = momentum;
-  m_outType = outType;
 }
 
-std::vector<double> NeuralNet::minusVec(std::vector<double> one, std::vector<double> two)
-{
-  assert( one.size()==two.size() );
-  std::vector<double> result;
-	for(unsigned int i=0;i<one.size();++i)
-	{
-		result.push_back(one[i]-two[i]);
-        std::cout << i << " : " << one[i] << " | " << two[i] << " | " << result[i] << std::endl;
-	}
-	return result;
-}
-
-double computeMSE( const std::vector<double>& error )
-{
-  double MSE = 0.0;
-  for(unsigned int i=0;i<error.size();++i)
-  {
-    MSE += error[i]*error[i];
-  }
-  return 0.5*MSE;
-}
-
-double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput, const unsigned int outType)
+double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput)
 {
 
   int outputLayer = m_layers.size();
-  int inputLayer = 0;
   
   std::vector<double> output,error,delta,prevOut,nextDeltas;
   double cost = 0.0;
   
   // run net forward
   output = runNet( data );
-  error = computeError( output, trainingOutput );
-  switch(outType)
-  {
-    case SCALAR:
-      cost = computeMSE( error );
-      break;
-    case PROB:
-      cost = logloss( output, trainingOutput );
-      break;
-  }
+  error = m_layers[outputLayer-1]->computeError( output, trainingOutput );
+  cost = m_layers[outputLayer-1]->computeCost( error );
 
   // propagate error backward through layers
   for(int i=outputLayer; i>0; i--)
@@ -121,11 +88,6 @@ std::vector<double> NeuralNet::computeOutput(const std::vector<double> & inputs)
     ins=outs;
   }
   return outs;
-}
-
-std::vector<double> NeuralNet::computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput)
-{
-  return minusVec(netOutput,labeledOutput);
 }
 
 double NeuralNet::logloss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput)
@@ -178,7 +140,6 @@ bool NeuralNet::saveNet( const char * filename )
   outp << m_learningRate << "\t";
   outp << m_momentum << "\t";
   outp << m_weightDecay << "\t";
-  outp << m_outType << "\t";
   outp << std::endl << std::endl;
 
   // save individual layers
@@ -222,13 +183,11 @@ bool NeuralNet::loadNet( const char * filename )
   double learnRate = 0.0;
   double mom = 0.0;
   double decay = 0.0;
-  unsigned int outType = 0;
   inp >> loadLayers;
   inp >> learnRate;
   inp >> mom;
   inp >> decay;
-  inp >> outType;
-  setParams(learnRate,mom,decay,outType);
+  setParams(learnRate,mom,decay);
 
   // construct network
   for(unsigned int m=0;m<loadLayers;++m)

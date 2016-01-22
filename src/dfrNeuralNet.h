@@ -10,11 +10,6 @@
 #include "dfrNeuralSoftmaxLayer.h"
 #include "dfrNeuralRectlinLayer.h"
 
-// output enum to create correct training data
-// use SCALAR for tanh/sigmoid output layers, 
-// PROB for softmax output layers
-enum{SCALAR,PROB};
-
 class NeuralNet
 {
   public:
@@ -23,13 +18,13 @@ class NeuralNet
   
     void addLayer(NeuralLayer * layer);
     
-    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const unsigned int outType);
+    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
     
     std::vector<double> runNet(const std::vector<double>& data);
     
     int numLayers() { return m_layers.size(); }
     
-    void setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType);
+    void setParams(const double& rate, const double& momentum, const double& decay);
 
     bool saveNet( const char * filename=nullptr );
 
@@ -41,13 +36,8 @@ class NeuralNet
     double m_learningRate;
     double m_momentum;
     double m_weightDecay;
-    unsigned int m_outType;
-    
-    std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
     
     std::vector<double> computeOutput(const std::vector<double> & inputs);
-    
-    std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
 
     double logloss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
 
