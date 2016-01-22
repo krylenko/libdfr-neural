@@ -162,6 +162,7 @@ bool NeuralNet::saveNet( const char * filename )
     time_t now = time(0);
     struct tm* localnow = localtime(&now);
     std::ostringstream fname;
+    fname << "../data/";
     fname << "netsave_" << localnow->tm_mon+1 << "-" << localnow->tm_mday << "-" << localnow->tm_year+1900 << "_";
     fname << localnow->tm_hour << "-" << localnow->tm_min << "-" << localnow->tm_sec;
     fname << ".data";
