@@ -15,25 +15,32 @@
 // 4    path to data
 #define NUM_CMD_ARGS    5
 
-DataHandler::DataHandler(int paramCount_, char ** params_, NeuralNet * net_, unsigned int inputs_, unsigned int outputs_, unsigned int numPts_, unsigned int task_)
+DataHandler::DataHandler(int paramCount_, char ** params_, NeuralNet * net_,
+                         unsigned int inputs_, unsigned int outputs_, unsigned int numPts_)
 : _net(net_),
-  _task(task_),
   _inputs(inputs_),
   _numClasses(outputs_),
   _numPts(numPts_),
+  _numTrain((unsigned int)(_numPts*0.6)),
+  _numTest(_numPts-_numTrain),
+  _numValid(0),
   _timeStart(0),
-  _timeStop(0)
+  _timeStop(0),
+  _trueCnt(0)
 {
 
     if(paramCount_ < NUM_CMD_ARGS ){
-        _printUsage();
+        printUsage();
         exit(-1);
     }
 
-    _loadParams(params_);
+    loadParams(params_);
 
-    _allData = new DVEC( numPts_, std::vector<double>(inputs_+1,0.0) );
-    _loadData(*_allData, params_[4]);   
+    _allData = new DVEC( _numPts, std::vector<double>(_inputs+1,0.0) );
+    _trainData = new DVEC( _numTrain, std::vector<double>(_inputs+1,0.0) );
+    _testData = new DVEC( _numTest, std::vector<double>(_inputs+1,0.0) );
+    _validData = new DVEC( _numValid, std::vector<double>(_inputs+1,0.0) );
+    loadData(_allData, params_[4]);
 
     srand((int)time(NULL));
 }
@@ -41,6 +48,69 @@ DataHandler::DataHandler(int paramCount_, char ** params_, NeuralNet * net_, uns
 DataHandler::~DataHandler()
 {
     delete _allData;
+}
+
+void DataHandler::trainNet(unsigned int epochs_)
+{
+
+    std::cout << "\n" << "training points: " << _numTrain << std::endl;
+    std::cout << "training network... " << std::endl;
+    timeStart();
+
+    for(unsigned int m=0; m<epochs_; ++m){
+
+        double error = 0.0;
+        sliceData();
+        for(unsigned int i=0;i<_numTrain;++i){
+            std::vector<double> data = (*_trainData)[i];            // extract data point
+            double label = data[0];                             // extract point label
+            data.erase(data.begin());
+            std::vector<double> nLabel = classToOneHot((unsigned int)label);    // encode to 1-of-N
+
+            std::vector<double> outputs = _net->runNet(data);
+            error = _net->trainNet(data,nLabel);    // train net, return MSE
+
+            // decode output and compare to correct output
+            if( oneHotToClass(outputs) == (unsigned int)label )
+                _trueCnt++;
+        }
+        std::cout << "epoch: " << m << "\t" << "error: " << error << std::endl;
+
+    }
+
+    // stop timer and print out useful info
+    int times = timeStop();
+    std::cout << "done" << std::endl;
+    std::cout << "training time: " << times << " seconds " << std::endl;
+    std::cout << "training accuracy: " << _trueCnt*100./(_numTrain * epochs_) << "%" << std::endl;
+
+}
+
+void DataHandler::runNet()
+{
+    // test net on test data
+    timeStart();
+    std::cout << "\n" << "test points: " << _numTest << std::endl;
+    std::cout << "testing network... ";
+    _trueCnt = 0;
+    for(unsigned int i=0;i<_numTest;++i)
+    {
+        std::vector<double> data = (*_testData)[i];     // extract data point
+        double label = data[0];                     // extract label
+        data.erase(data.begin());
+        std::vector<double> outputs = _net->runNet(data);    // run net
+
+        // decode output and compare to correct output
+        if( oneHotToClass(outputs) == (unsigned int)label )
+            _trueCnt++;
+    }
+
+    // stop timer and print out useful info
+    int times = timeStop();
+
+    std::cout << "done" << std::endl;
+    std::cout << "testing time: " << times << " seconds " << std::endl;
+    std::cout << "test accuracy: " << _trueCnt*100./_numTest << "% " << std::endl << std::endl;
 }
 
 void DataHandler::printVec(const std::vector<double>& vec)
@@ -53,7 +123,7 @@ void DataHandler::printVec(const std::vector<double>& vec)
     std::cout << std::endl;
 }
 
-bool DataHandler::_loadParams(char ** params_)
+bool DataHandler::loadParams(char ** params_)
 {
 
     if(!_net)
@@ -72,7 +142,7 @@ bool DataHandler::_loadParams(char ** params_)
     // print useful info for reference
     std::cout << "hidden layers: " << _net->numLayers()-1 << std::endl;
 
-    std::cout << "\n" << "training examples: " << _numPts << std::endl;
+    std::cout << "\n" << "total data points: " << _numPts << std::endl;
     std::cout << "learning rate: " << learningRate << std::endl;
     std::cout << "momentum: " << momentum << std::endl;
     std::cout << "weight decay: " << decayRate << std::endl << std::endl;
@@ -80,7 +150,7 @@ bool DataHandler::_loadParams(char ** params_)
     return true;
 }
 
-bool DataHandler::_loadData(DVEC& data_, const char * filename_)
+bool DataHandler::loadData(DVEC * data_, const char * filename_)
 {
 
     std::cout << "loading data... ";
@@ -88,9 +158,9 @@ bool DataHandler::_loadData(DVEC& data_, const char * filename_)
     std::ifstream inp;
     inp.open(filename_, std::ios::in);
     if(inp){
-        for(unsigned int i=0; i<data_.size(); ++i){
-            for(unsigned int j=0;j<data_[0].size();++j){
-                inp >> data_[i][j];
+        for(unsigned int i=0; i<data_->size(); ++i){
+            for(unsigned int j=0;j<(*data_)[i].size();++j){
+                inp >> (*data_)[i][j];
             }
         }
 
@@ -104,7 +174,7 @@ bool DataHandler::_loadData(DVEC& data_, const char * filename_)
         return false;
 }
 
-bool DataHandler::sliceData(DVEC& trainData_, DVEC& testData_, DVEC& validData_, unsigned int numTrain_, unsigned int numTest_)
+bool DataHandler::sliceData()
 {
 
     unsigned int rndIdx = 0;
@@ -114,36 +184,36 @@ bool DataHandler::sliceData(DVEC& trainData_, DVEC& testData_, DVEC& validData_,
     for(unsigned int i=0; i<_numPts; ++i){
 
         // get a random index in the data that hasn't already been used
-        rndIdx = _shuffle(_numPts);
+        rndIdx = shuffle(_numPts);
         if( idxSet.find(rndIdx) == idxSet.end() )
             idxSet.insert(rndIdx);
         else {
             while( idxSet.find(rndIdx) == idxSet.end() )
-                rndIdx = _shuffle(_numPts);
+                rndIdx = shuffle(_numPts);
             idxSet.insert(rndIdx);
         }
 
         for(unsigned int j=0;j<_inputs+1;++j){
 
-            if( cnt < numTrain_ ){
+            if( cnt < _numTrain ){
                 if( j==0 )
-                    trainData_[cnt][j] = (*_allData)[rndIdx][j];
+                    (*_trainData)[cnt][j] = (*_allData)[rndIdx][j];
                 else
-                    trainData_[cnt][j] = _norm((*_allData)[rndIdx][j]);
+                    (*_trainData)[cnt][j] = norm((*_allData)[rndIdx][j]);
             }
 
-            if( cnt >= numTrain_ && i < (numTrain_ + numTest_ ) ){
+            if( cnt >= _numTrain && i < (_numTrain + _numTest ) ){
                 if( j==0 )
-                    testData_[cnt-numTrain_][j] = (*_allData)[rndIdx][j];
+                    (*_testData)[cnt-_numTrain][j] = (*_allData)[rndIdx][j];
                 else
-                    testData_[cnt-numTrain_][j] = _norm((*_allData)[rndIdx][j]);
+                    (*_testData)[cnt-_numTrain][j] = norm((*_allData)[rndIdx][j]);
             }            
 
-            if( cnt > (numTrain_ + numTest_ ) ){
+            if( cnt > (_numTrain + _numTest ) ){
                 if( j==0 )
-                    validData_[cnt-numTrain_-numTest_][j] = (*_allData)[rndIdx][j];
+                    (*_validData)[cnt-_numTrain-_numTest][j] = (*_allData)[rndIdx][j];
                 else
-                    validData_[cnt-numTrain_-numTest_][j] = _norm((*_allData)[rndIdx][j]);
+                    (*_validData)[cnt-_numTrain-_numTest][j] = norm((*_allData)[rndIdx][j]);
             }
 
         }
@@ -154,12 +224,18 @@ bool DataHandler::sliceData(DVEC& trainData_, DVEC& testData_, DVEC& validData_,
     return true;
 }
 
-bool DataHandler::_saveNet()
+bool DataHandler::saveNet()
 {
-    return true;
+    bool success = false;
+    if(_net){
+        _net->saveNet();
+        success = true;
+    }
+
+    return success;
 }
 
-bool DataHandler::_loadNet()
+bool DataHandler::loadNet()
 {
     return true;
 }
@@ -203,17 +279,17 @@ int DataHandler::timeStop()
 }
 
 // return random index for data of given size in range [0,size-1]
-unsigned int DataHandler::_shuffle(const unsigned int& size)
+unsigned int DataHandler::shuffle(const unsigned int& size)
 {
   return (unsigned int)(size*(double)rand()/(double)RAND_MAX);
 }
 
-double DataHandler::_norm(double input)
+double DataHandler::norm(double input)
 {
     return input/255.0;
 }
 
-void DataHandler::_printUsage()
+void DataHandler::printUsage()
 {
     std::cout << std::endl;
     std::cout << "usage is: mnist <learning_rate> <momentum> <decay_rate> <path_to_data>" << std::endl;

@@ -24,8 +24,6 @@
 
 #include "dfrNeuralNet.h"
 
-enum{TRAINING,INFERENCE};
-
 typedef std::vector< std::vector<double> > DVEC;
 
 class DataHandler
@@ -34,15 +32,12 @@ class DataHandler
     public:
 
         DataHandler(int argc, char ** params_, NeuralNet * net_, 
-                    unsigned int inputs_, unsigned int outputs_, unsigned int numPts_, unsigned int task_=TRAINING);
+                    unsigned int inputs_, unsigned int outputs_, unsigned int numPts_);
 
-        unsigned int oneHotToClass(const std::vector<double>& oneHot_);
-        std::vector<double> classToOneHot(unsigned int class_);
+        void trainNet(unsigned int epochs_);
+        void runNet();
 
-        bool sliceData(DVEC& trainData_, DVEC& testData_, DVEC& validData_, unsigned int numTrain_, unsigned int numTest_);
-
-        void timeStart();
-        int timeStop();
+        bool saveNet();
 
         void printVec(const std::vector<double>& vec);
 
@@ -52,23 +47,35 @@ class DataHandler
 
         NeuralNet * _net;
         DVEC * _allData;
-        unsigned int _task;
+        DVEC * _trainData;
+        DVEC * _testData;
+        DVEC * _validData;
         unsigned int _inputs;
         unsigned int _numClasses;
         unsigned int _numPts;
+        unsigned int _numTrain;
+        unsigned int _numTest;
+        unsigned int _numValid;
         int _timeStart;
         int _timeStop;
+        unsigned int _trueCnt;
 
-        bool _loadParams(char ** params_);
-        bool _loadData(DVEC& data_, const char * filename_);
+        bool loadParams(char ** params_);
+        bool loadData(DVEC * data_, const char * filename_);
+        bool sliceData();
 
-        bool _saveNet();
-        bool _loadNet();
+        unsigned int oneHotToClass(const std::vector<double>& oneHot_);
+        std::vector<double> classToOneHot(unsigned int class_);
 
-        unsigned int _shuffle(const unsigned int& size);
-        double _norm(double input);
+        bool loadNet();
 
-        void _printUsage();
+        void timeStart();
+        int timeStop();
+
+        unsigned int shuffle(const unsigned int& size);
+        double norm(double input);
+
+        void printUsage();
 
 };
 
