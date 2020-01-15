@@ -1,5 +1,3 @@
-// daniel ford 2015
-
 #ifndef __DFRNEURALLAYER_H__
 #define __DFRNEURALLAYER_H__
 
@@ -42,7 +40,7 @@ class NeuralLayer
     int m_numInputs;
     int m_numNodes;
     std::vector<std::vector<double> > m_weights;
-	  std::vector<double> m_biases;
+    std::vector<double> m_biases;
     std::vector<double> m_output;
     std::vector<std::vector<double> > m_nextDeltas;
   

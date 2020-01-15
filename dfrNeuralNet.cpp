@@ -112,8 +112,7 @@ std::vector<double> NeuralNet::computeOutput(const std::vector<double> & inputs)
 {
   std::vector<double> ins(inputs);
   std::vector<double> outs;
-  for(std::vector<NeuralLayer *>::iterator it=m_layers.begin();it!=m_layers.end();++it)
-  {
+  for(std::vector<NeuralLayer *>::iterator it=m_layers.begin(); it!=m_layers.end(); ++it) {
     outs=(*it)->computeOutputs(ins);
     ins=outs;
   }
@@ -128,12 +127,9 @@ std::vector<double> NeuralNet::computeError(const std::vector<double>& netOutput
 double NeuralNet::logloss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput)
 {
   double logloss = 0.0;
-
-  for(unsigned int i=0;i<netOutput.size();++i)
-  {
+  for(unsigned int i=0; i<netOutput.size(); ++i) {
     logloss -= log(netOutput[i])*labeledOutput[i]; 
   }
-
   return logloss;
 }
 
@@ -144,8 +140,7 @@ bool NeuralNet::saveNet( const char * filename )
   unsigned int nLayers = numLayers();
 
   // don't save empty network
-  if( nLayers == 0 )
-  {
+  if( nLayers == 0 ) {
     return false;
   }
 
@@ -153,8 +148,7 @@ bool NeuralNet::saveNet( const char * filename )
   assert(outp);
 
   std::string temp;
-  if( !filename )
-  {
+  if( !filename ) {
     time_t now = time(0);
     struct tm* localnow = localtime(&now);
     std::ostringstream fname;
