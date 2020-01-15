@@ -12,11 +12,11 @@
 
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
-#define HIDDEN          300
+#define HIDDEN          30
 #define OUTPUT          10
-#define DATA_SIZE       2000         // max in file is 42001
-#define TRAIN_SIZE      250
-#define TEST_SIZE       100
+#define DATA_SIZE       200         // max in file is 42001
+#define TRAIN_SIZE      150
+#define TEST_SIZE       200
 
 // fn prototypes
 std::vector<double> encode(const int& digit);
@@ -63,7 +63,7 @@ int main()
   // load training and test data
   std::cout << "loading data..." << "\t \t \t";
   std::vector< std::vector<double> > bigData( DATA_SIZE,std::vector<double>(INPUT+1,0.0) );
-  loadFromFile(bigData,"train.txt");
+  loadFromFile(bigData, "/home/junkbox/code/lib/libdfr-neural/train.txt");
 
   std::vector< std::vector<double> > trainData( TRAIN_SIZE,std::vector<double>(INPUT+1,0.0) );
   std::vector< std::vector<double> > testData( TEST_SIZE,std::vector<double>(INPUT+1,0.0) );
@@ -85,10 +85,20 @@ int main()
     double label = data[0];                             // extract point label
     data.erase(data.begin());
     std::vector<double> nLabel = encode((int)label);    // encode to 1-of-N   
-    
+
+    std::cout << label << std::endl;
+    unsigned int idx = 1;
+    for (auto& d : data) {
+        std::cout << d;
+        if (idx % 29 == 0) {
+            std::cout << std::endl;
+        }
+        idx++;
+    }
+    std::cout << std::endl;
+
     std::vector<double> outputs = DigitNet.runNet(data);
     error = DigitNet.trainNet(data,nLabel,outType);    // train net, return MSE
-
     // decode output and compare to correct output 
     if( decode(outputs) == (int)label )
         truecnt++;    
@@ -114,7 +124,7 @@ int main()
     data.erase(data.begin());
    
     std::vector<double> outputs = DigitNet.runNet(data);    // run net
-
+    std::cout << (int)label << " -> " << decode(outputs) << std::endl;
     // decode output and compare to correct output 
     if( decode(outputs) == (int)label )
         truecnt++;    
@@ -148,7 +158,7 @@ void buildData( const std::vector< std::vector<double> >& allData,
   {
     rndIdx = shuffle(trainSize);
     for(int j=0;j<INPUT+1;++j)
-      trainData[i][j] = allData[rndIdx][j];
+      trainData[i][j] = allData[rndIdx][j] / 255.;
   }
 
   // extract test data
@@ -156,7 +166,7 @@ void buildData( const std::vector< std::vector<double> >& allData,
   {
     rndIdx = shuffle(testSize);
     for(int j=0;j<INPUT+1;++j)
-      testData[i][j] = allData[rndIdx][j];
+      testData[i][j] = allData[rndIdx][j] / 255.;
   }
   
 }

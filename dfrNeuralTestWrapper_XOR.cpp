@@ -15,19 +15,21 @@ int main(int argc, char *argv[])
   // create network
   NeuralNet network;
   
-  NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(2,16);
+  NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(2,300);
   network.addLayer( pHiddenLayer1 );
   //NeuralLayer * pHiddenLayer2 = new NeuralTanhLayer(16,16);
   //network.addLayer( pHiddenLayer2 );
 
-  NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(16,2);
+  NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(300,2);
+  //NeuralLayer * pOutputLayer = new NeuralSigmoidLayer(16,1);
   network.addLayer( pOutputLayer );
 
   // set learning rate, momentum, decay rate, output type
   // SCALAR = tanh or sigmoid output layer (use one output neuron)
   // PROB = softmax output layer, 1-of-C output encoding (use two output neurons)
   const unsigned int outType = PROB;
-  network.setParams(0.2, 0, 0, outType);
+  //const unsigned int outType = SCALAR;
+  network.setParams(0.01, 0, 0, outType);
 
   const unsigned int iters = 1000;
   const unsigned int testers = 2500;
@@ -64,10 +66,10 @@ int main(int argc, char *argv[])
       switch(outType)
       {
         case SCALAR:
-          std::cout << exor[0] << "\t\t" << exor[1] << "\t\t" << outputs[0] << "\t\t" << error << std::endl;
+          std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << ", " << error << std::endl;
           break;
         case PROB:
-          std::cout << exor[0] << "\t\t" << exor[1] << "\t\t" << outputs[0] << "\t\t" << outputs[1] << "\t\t" << error << std::endl;
+          std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << " | " << outputs[1] << ", " << error << std::endl;
           break;
       }
     }
@@ -181,7 +183,7 @@ std::vector<double> softmax_XOR_training()
     // per-class outputs
     exor.push_back(0); exor.push_back(1);
   }
-
+  //std::cout << x << ", " << exor[0] << " ^ " << exor[1] << " = " << exor[2] << " | " << exor[3] << std::endl;
   return exor;
   
 }

@@ -2,6 +2,7 @@
 
 #include "dfrNeuralNet.h"
 #include <assert.h>
+#include <cmath>
 #include <iostream>
 #include <fstream>
 #include <ctime>
