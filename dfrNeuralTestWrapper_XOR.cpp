@@ -1,4 +1,3 @@
-// daniel ford 2015
 // neural net example script: learning XOR
 
 #include <iostream>
@@ -35,7 +34,7 @@ int main(int argc, char *argv[])
   const unsigned int testers = 2500;
   int rightCount = 0;
 
-  for(int i=0;i<iters+testers;++i)
+  for (int i=0; i<iters+testers; ++i)
   {
   
     double error = 0.0;

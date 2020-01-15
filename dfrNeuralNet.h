@@ -1,7 +1,5 @@
-// daniel ford 2015
-
-#ifndef __DFRNEURALNET_H__
-#define __DFRNEURALNET_H__
+#ifndef DFRNEURALNET_H
+#define DFRNEURALNET_H
 
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralLinearLayer.h"
@@ -16,7 +14,7 @@ enum{SCALAR,PROB};
 
 class NeuralNet
 {
-  public:
+public:
     NeuralNet();
     ~NeuralNet();
   
@@ -26,7 +24,7 @@ class NeuralNet
     
     std::vector<double> runNet(const std::vector<double>& data);
     
-    int numLayers() { return m_layers.size(); }
+    vecIntType numLayers() { return m_layers.size(); }
     
     void setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType);
 
@@ -34,7 +32,7 @@ class NeuralNet
 
     bool loadNet( const char * filename );
   
-  private:
+private:
 
     std::vector<NeuralLayer *> m_layers;
     double m_learningRate;

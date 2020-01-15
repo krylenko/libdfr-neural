@@ -1,5 +1,5 @@
-#ifndef __DFRNEURALLAYER_H__
-#define __DFRNEURALLAYER_H__
+#ifndef DFRNEURALLAYER_H
+#define DFRNEURALLAYER_H
 
 #include <vector>
 
@@ -8,17 +8,19 @@ enum{LINEAR,TANH,SIGMOID,SOFTMAX};
 
 enum{FALSE,TRUE};
 
+using vecIntType = std::vector<int>::size_type;
+using vecDblType = std::vector<double>::size_type;
+
 class NeuralLayer
 {
-
-  public:
+public:
   
-    NeuralLayer(const int inputs, const int nodes);
+    NeuralLayer(const vecIntType inputs, const vecIntType nodes);
     virtual ~NeuralLayer();
     
-    virtual unsigned int numInputs() {return m_numInputs;}
+    virtual vecIntType numInputs() {return m_numInputs;}
 
-    virtual unsigned int numNodes() {return m_numNodes;}
+    virtual vecIntType numNodes() {return m_numNodes;}
 
     virtual std::vector<double> computeOutputs(const std::vector<double>& inputs);
 
@@ -32,13 +34,13 @@ class NeuralLayer
     
     virtual void loadWeights(const std::vector<std::vector<double> > newWeights) {m_weights=newWeights;}
 
-    virtual unsigned int getType() {return m_type;}
+    virtual vecIntType getType() {return m_type;}
 
-  protected:
+protected:
   
-    unsigned int m_type;
-    int m_numInputs;
-    int m_numNodes;
+    vecIntType m_type;
+    vecIntType m_numInputs;
+    vecIntType m_numNodes;
     std::vector<std::vector<double> > m_weights;
     std::vector<double> m_biases;
     std::vector<double> m_output;

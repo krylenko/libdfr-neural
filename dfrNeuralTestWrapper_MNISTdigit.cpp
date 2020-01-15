@@ -20,10 +20,11 @@
 #define TEST_SIZE       200
 
 // fn prototypes
-std::vector<double> encode(const int& digit);
-int decode(std::vector<double>& netOut);
-void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData, const int& trainSize, std::vector< std::vector<double> >& testData, const int& testSize);
-int shuffle(const int& size);
+std::vector<double> encode(const vecIntType digit);
+vecIntType decode(std::vector<double>& netOut);
+void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData,
+               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize);
+vecIntType shuffle(const vecIntType size);
 void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]);
 
 int main()
@@ -32,13 +33,13 @@ int main()
     // init variables
     double error = 0.;
     int truecnt = 0;
-    int times,timed;
+    int times, timed;
 
     // print useful info for reference
     //std::cout << "\n" << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
 
     // init random number generator
-    srand((int)time(NULL));
+    srand(unsigned(time(nullptr)));
 
     // create network
     std::cout << "initializing network..." << "\t \t";
@@ -88,18 +89,18 @@ int main()
 
     // loop over training data points and train net
     // slice off first column of each row (example)
-    times=(int)time(NULL);   // init time counter
+    times = int(time(nullptr));   // init time counter
     std::cout << "\n" << "training examples: " << "\t \t" << TRAIN_SIZE << std::endl;
     std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
     std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
     std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl;
     std::cout << "training network..." << "\t \t" << std::endl;
 
-    for(int i=0;i<TRAIN_SIZE;++i) {
+    for (vecIntType i=0; i<TRAIN_SIZE; ++i) {
         std::vector<double> data = trainData[i];            // extract data point
         double label = data[0];                             // extract point label
         data.erase(data.begin());
-        std::vector<double> nLabel = encode((int)label);    // encode to 1-of-N
+        std::vector<double> nLabel = encode(vecIntType(label));    // encode to 1-of-N
 
         /*
         std::cout << label << std::endl;
@@ -116,24 +117,24 @@ int main()
         error = DigitNet.trainNet(data, nLabel, outType);    // train net, return MSE
 
         // decode output and compare to correct output
-        if( decode(outputs) == (int)label ) {
+        if (decode(outputs) == vecIntType(label)) {
             truecnt++;
         }
     }
 
     // stop timer and print out useful info
-    timed=(int)time(NULL);
-    times=timed-times;
+    timed = int(time(nullptr));
+    times = timed - times;
     std::cout << "done" << std::endl;
     std::cout << "training time: " << "\t \t \t" << times << " seconds " << std::endl;
-    std::cout << "training accuracy: " << "\t \t" << truecnt*100./TRAIN_SIZE << "%" << std::endl;
+    std::cout << "training accuracy: " << "\t \t" << truecnt * 100. / TRAIN_SIZE << "%" << std::endl;
 
     // test net on test data
-    times=(int)time(NULL);   // init time counter
+    times = int(time(nullptr));   // init time counter
     std::cout << "\n" << "test points: " << "\t \t \t" << TEST_SIZE << std::endl;
     std::cout << "testing network..." << "\t \t" << std::endl;
     truecnt = 0;
-    for(int i=0; i<TEST_SIZE; ++i) {
+    for (vecIntType i=0; i<TEST_SIZE; ++i) {
 
         std::vector<double> data = testData[i];     // extract data point
         double label = data[0];                     // extract label
@@ -148,15 +149,15 @@ int main()
         */
 
         // decode output and compare to correct output
-        if( decode(outputs) == int(label) ) {
+        if (decode(outputs) == vecIntType(label)) {
             truecnt++;
         }
 
     }
 
     // stop timer and print out useful info
-    timed=(int)time(NULL);
-    times=timed-times;
+    timed = int(time(nullptr));
+    times = timed - times;
     std::cout << "done" << std::endl;
     std::cout << "testing time: " << "\t \t \t" << times << " seconds " << std::endl;
     std::cout << "test accuracy: " << "\t \t \t" << truecnt*100./TEST_SIZE << "% " << std::endl;
@@ -168,36 +169,36 @@ int main()
 
 // separate data into training and test sets
 void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData,
-               const int& trainSize, std::vector< std::vector<double> >& testData, const int& testSize)
+               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize)
 {
 
-    int rndIdx = 0;
+    vecIntType rndIdx = 0;
 
     // extract training data
-    for(int i=0; i<trainSize; ++i) {
+    for (vecIntType i=0; i<trainSize; ++i) {
         rndIdx = shuffle(trainSize);
-        for(int j=0; j<INPUT+1; ++j) {
+        for (vecIntType j=0; j<INPUT+1; ++j) {
             trainData[i][j] = (j == 0) ? allData[rndIdx][j] : allData[rndIdx][j] / 255.;
         }
     }
 
     // extract test data
-    for(int i=0; i<testSize; ++i) {
+    for (vecIntType i=0; i<testSize; ++i) {
         rndIdx = shuffle(testSize);
-        for(int j=0; j<INPUT+1; ++j)
+        for (vecIntType j=0; j<INPUT+1; ++j)
         testData[i][j] = (j == 0) ? allData[rndIdx][j] : allData[rndIdx][j] / 255.;
     }
 
 }
 
-// return random index for data of given size in range [0,size-1]
-int shuffle(const int& size)
+// return random index for data of given size in range [0, size-1]
+vecIntType shuffle(const vecIntType size)
 {
-    return (int(size * double(rand()) / double(RAND_MAX)));
+    return vecIntType(size * double(rand()) / double(RAND_MAX));
 }
 
 // convert single input digit label into 1-of-10 encoded matrix
-std::vector<double> encode(const int& digit)
+std::vector<double> encode(const vecIntType digit)
 {
     std::vector<double> output(10, 0.);
     output[digit] = 1.;
@@ -205,11 +206,11 @@ std::vector<double> encode(const int& digit)
 }
 
 // convert 1-of-10 float output matrix to single digit
-int decode(std::vector<double>& netOut)
+vecIntType decode(std::vector<double>& netOut)
 {
-    int digit = 0; double tmp = netOut[0];
-    for(int i = 0;i<10;++i) {
-        if(netOut[i] > tmp) {
+    vecIntType digit = 0; double tmp = netOut[0];
+    for (vecIntType i = 0;i<10;++i) {
+        if (netOut[i] > tmp) {
             digit = i;
             tmp = netOut[i];
         }
@@ -221,9 +222,9 @@ void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]
 {
     std::ifstream inp;
     inp.open(filename, std::ios::in);
-    if(inp) {
-        for(unsigned int i=0; i<vec.size(); ++i) {
-            for(unsigned int j=0;j<vec[0].size();++j) {
+    if (inp) {
+        for (unsigned int i=0; i<vec.size(); ++i) {
+            for (unsigned int j=0;j<vec[0].size();++j) {
                 inp >> vec[i][j];
             }
         }
