@@ -3,8 +3,9 @@
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralSigmoidLayer.h"
 
-NeuralSigmoidLayer::NeuralSigmoidLayer(const vecIntType inputs, const vecIntType nodes)
-: NeuralLayer(inputs, nodes)
+NeuralSigmoidLayer::NeuralSigmoidLayer(const vecIntType inputs, const vecIntType nodes,
+                                       const int randSeed)
+: NeuralLayer(inputs, nodes, randSeed)
 {
     m_type = SIGMOID;
 }
@@ -13,10 +14,11 @@ NeuralSigmoidLayer::~NeuralSigmoidLayer()
 {
 }
 
-std::vector<double> NeuralSigmoidLayer::computeOutputs(const std::vector<double>& inputs)
+std::vector<double> NeuralSigmoidLayer::computeOutputs(const std::vector<double>& inputs,
+                                                       const bool dropout)
 {
     std::vector<double> outs(m_numNodes);
-    outs = NeuralLayer::computeOutputs(inputs);
+    outs = NeuralLayer::computeOutputs(inputs, dropout);
     for (std::vector<double>::iterator it=outs.begin(); it!=outs.end(); ++it) {
         // logistic function
         *it = 1 / (1 + exp(-1.0 * (*it)));

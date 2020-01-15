@@ -16,15 +16,17 @@
 #define HIDDEN_2        200
 #define OUTPUT          10
 #define DATA_SIZE       30000         // max in file is 42001
-#define TRAIN_SIZE      15000
-#define TEST_SIZE       200
+#define TRAIN_SIZE      1500
+#define TEST_SIZE       25
+#define FROZEN_SEED     13
 
 // fn prototypes
 std::vector<double> encode(const vecIntType digit);
 vecIntType decode(std::vector<double>& netOut);
 void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData,
-               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize);
-vecIntType shuffle(const vecIntType size);
+               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize,
+               const bool shuffle);
+vecIntType shuffleIdx(const vecIntType size);
 void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]);
 
 int main()
@@ -45,12 +47,10 @@ int main()
     std::cout << "initializing network..." << "\t \t";
     NeuralNet DigitNet;
 
-    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT,HIDDEN_1);
-    DigitNet.addLayer( pHiddenLayer1 );
-    //NeuralLayer * pHiddenLayer2 = new NeuralTanhLayer(HIDDEN_1, HIDDEN_2);
-    //DigitNet.addLayer( pHiddenLayer2 );
-    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT);
-    DigitNet.addLayer( pOutputLayer );
+    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT, HIDDEN_1, FROZEN_SEED);
+    DigitNet.addLayer(pHiddenLayer1);
+    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT, FROZEN_SEED);
+    DigitNet.addLayer(pOutputLayer);
     const unsigned int outType = PROB;
 
     // set learning rate, momentum, decay rate
@@ -67,8 +67,9 @@ int main()
     std::vector< std::vector<double> > trainData(TRAIN_SIZE, std::vector<double>(INPUT+1,0.0));
     std::vector< std::vector<double> > testData(TEST_SIZE, std::vector<double>(INPUT+1,0.0));
 
+    const bool shuffleData = false;
     loadFromFile(bigData, "../../lib/libdfr-neural/train.txt");
-    buildData(bigData, trainData, TRAIN_SIZE, testData, TEST_SIZE);
+    buildData(bigData, trainData, TRAIN_SIZE, testData, TEST_SIZE, shuffleData);
 
     /*
     std::cout << std::endl;
@@ -94,7 +95,7 @@ int main()
     std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
     std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
     std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl;
-    std::cout << "training network..." << "\t \t" << std::endl;
+    std::cout << "training network..." << "\t \t";
 
     for (vecIntType i=0; i<TRAIN_SIZE; ++i) {
         std::vector<double> data = trainData[i];            // extract data point
@@ -132,7 +133,7 @@ int main()
     // test net on test data
     times = int(time(nullptr));   // init time counter
     std::cout << "\n" << "test points: " << "\t \t \t" << TEST_SIZE << std::endl;
-    std::cout << "testing network..." << "\t \t" << std::endl;
+    std::cout << "testing network..." << "\t \t";
     truecnt = 0;
     for (vecIntType i=0; i<TEST_SIZE; ++i) {
 
@@ -169,14 +170,15 @@ int main()
 
 // separate data into training and test sets
 void buildData(const std::vector< std::vector<double> >& allData, std::vector< std::vector<double> >& trainData,
-               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize)
+               const vecIntType trainSize, std::vector< std::vector<double> >& testData, const vecIntType testSize,
+               const bool shuffle)
 {
 
     vecIntType rndIdx = 0;
 
     // extract training data
     for (vecIntType i=0; i<trainSize; ++i) {
-        rndIdx = shuffle(trainSize);
+        rndIdx = shuffle? shuffleIdx(trainSize) : i;
         for (vecIntType j=0; j<INPUT+1; ++j) {
             trainData[i][j] = (j == 0) ? allData[rndIdx][j] : allData[rndIdx][j] / 255.;
         }
@@ -184,7 +186,7 @@ void buildData(const std::vector< std::vector<double> >& allData, std::vector< s
 
     // extract test data
     for (vecIntType i=0; i<testSize; ++i) {
-        rndIdx = shuffle(testSize);
+        rndIdx = shuffle? shuffleIdx(testSize) : i;
         for (vecIntType j=0; j<INPUT+1; ++j)
         testData[i][j] = (j == 0) ? allData[rndIdx][j] : allData[rndIdx][j] / 255.;
     }
@@ -192,7 +194,7 @@ void buildData(const std::vector< std::vector<double> >& allData, std::vector< s
 }
 
 // return random index for data of given size in range [0, size-1]
-vecIntType shuffle(const vecIntType size)
+vecIntType shuffleIdx(const vecIntType size)
 {
     return vecIntType(size * double(rand()) / double(RAND_MAX));
 }
@@ -224,7 +226,7 @@ void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]
     inp.open(filename, std::ios::in);
     if (inp) {
         for (unsigned int i=0; i<vec.size(); ++i) {
-            for (unsigned int j=0;j<vec[0].size();++j) {
+            for (unsigned int j=0; j<vec[0].size(); ++j) {
                 inp >> vec[i][j];
             }
         }

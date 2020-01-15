@@ -3,8 +3,9 @@
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralSoftmaxLayer.h"
 
-NeuralSoftmaxLayer::NeuralSoftmaxLayer(const vecIntType inputs, const vecIntType nodes)
-: NeuralLayer(inputs, nodes) 
+NeuralSoftmaxLayer::NeuralSoftmaxLayer(const vecIntType inputs, const vecIntType nodes,
+                                       const int randSeed)
+: NeuralLayer(inputs, nodes, randSeed)
 {
     m_type = SOFTMAX;
 }
@@ -13,10 +14,11 @@ NeuralSoftmaxLayer::~NeuralSoftmaxLayer()
 {
 }
 
-std::vector<double> NeuralSoftmaxLayer::computeOutputs(const std::vector<double>& inputs)
+std::vector<double> NeuralSoftmaxLayer::computeOutputs(const std::vector<double>& inputs,
+                                                       const bool dropout)
 {
     std::vector<double> outs(m_numNodes);
-    outs = NeuralLayer::computeOutputs(inputs);
+    outs = NeuralLayer::computeOutputs(inputs, dropout);
     double normalizer = 0.0;
     for (std::vector<double>::iterator it=outs.begin(); it!=outs.end(); ++it) {
         normalizer += exp(*it);

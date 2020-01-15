@@ -42,7 +42,7 @@ private:
     
     std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
     
-    std::vector<double> computeOutput(const std::vector<double> & inputs);
+    std::vector<double> computeOutput(const std::vector<double> & inputs, const bool dropout=false);
     
     std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
 

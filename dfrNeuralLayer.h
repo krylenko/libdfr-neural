@@ -15,14 +15,14 @@ class NeuralLayer
 {
 public:
   
-    NeuralLayer(const vecIntType inputs, const vecIntType nodes);
+    NeuralLayer(const vecIntType inputs, const vecIntType nodes, const int randSeed);
     virtual ~NeuralLayer();
     
     virtual vecIntType numInputs() {return m_numInputs;}
 
     virtual vecIntType numNodes() {return m_numNodes;}
 
-    virtual std::vector<double> computeOutputs(const std::vector<double>& inputs);
+    virtual std::vector<double> computeOutputs(const std::vector<double>& inputs, const bool dropout);
 
     virtual std::vector<double> retrieveOutputs() {return m_output;}
 
