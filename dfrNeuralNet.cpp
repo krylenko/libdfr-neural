@@ -54,7 +54,7 @@ double computeMSE(const std::vector<double>& error)
     return 0.5 * MSE;
 }
 
-double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput, const unsigned int outType)
+double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput, const unsigned int outType, const bool dropout)
 { 
     vecIntType outputLayer = m_layers.size();
 
@@ -62,7 +62,7 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
     double cost = 0.0;
 
     // run net forward
-    output = runNet(data);
+    output = runNet(data, dropout);
     error = computeError(output, trainingOutput);
     cost = (outType == SCALAR) ? computeMSE(error) : logloss(output, trainingOutput);
 
@@ -81,9 +81,9 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
     return cost;
 }
 
-std::vector<double> NeuralNet::runNet(const std::vector<double>& data)
+std::vector<double> NeuralNet::runNet(const std::vector<double>& data, const bool dropout)
 {
-    return computeOutput(data);
+    return computeOutput(data, dropout);
 }
 
 std::vector<double> NeuralNet::computeOutput(const std::vector<double> & inputs, const bool dropout)
@@ -126,7 +126,7 @@ bool NeuralNet::saveNet( const char * filename )
 
     std::string temp;
     if (!filename) {
-        time_t now = time(0);
+        time_t now = time(nullptr);
         struct tm* localnow = localtime(&now);
         std::ostringstream fname;
         fname << "netsave_" << localnow->tm_mon + 1 << "-" << localnow->tm_mday << "-" << localnow->tm_year + 1900 << "_";

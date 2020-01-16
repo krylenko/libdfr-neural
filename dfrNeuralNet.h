@@ -20,9 +20,9 @@ public:
   
     void addLayer(NeuralLayer * layer);
     
-    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const unsigned int outType);
+    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const unsigned int outType, const bool dropout=false);
     
-    std::vector<double> runNet(const std::vector<double>& data);
+    std::vector<double> runNet(const std::vector<double>& data, const bool dropout=false);
     
     vecIntType numLayers() { return m_layers.size(); }
     
@@ -42,7 +42,7 @@ private:
     
     std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
     
-    std::vector<double> computeOutput(const std::vector<double> & inputs, const bool dropout=false);
+    std::vector<double> computeOutput(const std::vector<double> & inputs, const bool dropout);
     
     std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
 

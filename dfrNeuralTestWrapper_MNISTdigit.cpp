@@ -1,4 +1,3 @@
-// daniel ford 2015
 // neural net example script: MNIST digit recognition
 
 #include <iostream>
@@ -15,10 +14,10 @@
 #define HIDDEN_1        200
 #define HIDDEN_2        200
 #define OUTPUT          10
-#define DATA_SIZE       30000         // max in file is 42001
-#define TRAIN_SIZE      1500
-#define TEST_SIZE       25
-#define FROZEN_SEED     13
+#define DATA_SIZE       40000         // max in file is 42001
+#define TRAIN_SIZE      40000
+#define TEST_SIZE       1000
+#define FROZEN_SEED     1029
 
 // fn prototypes
 std::vector<double> encode(const vecIntType digit);
@@ -28,9 +27,22 @@ void buildData(const std::vector< std::vector<double> >& allData, std::vector< s
                const bool shuffle);
 vecIntType shuffleIdx(const vecIntType size);
 void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]);
+void printDigit(const vecIntType label, std::vector<double>& data);
 
 int main()
 {
+
+    const bool randomize = true;
+    const bool useDropout = false;
+
+    unsigned seed = FROZEN_SEED;
+    bool shuffleData = false;
+    if (randomize) {
+        seed = unsigned(time(nullptr));
+        shuffleData = true;
+    }
+    // init random number generator
+    srand(seed);
 
     // init variables
     double error = 0.;
@@ -40,16 +52,13 @@ int main()
     // print useful info for reference
     //std::cout << "\n" << "hidden neurons: " << "\t \t" << HIDDEN << std::endl;
 
-    // init random number generator
-    srand(unsigned(time(nullptr)));
-
     // create network
     std::cout << "initializing network..." << "\t \t";
     NeuralNet DigitNet;
 
-    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT, HIDDEN_1, FROZEN_SEED);
+    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT, HIDDEN_1, seed);
     DigitNet.addLayer(pHiddenLayer1);
-    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT, FROZEN_SEED);
+    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT, seed);
     DigitNet.addLayer(pOutputLayer);
     const unsigned int outType = PROB;
 
@@ -67,25 +76,8 @@ int main()
     std::vector< std::vector<double> > trainData(TRAIN_SIZE, std::vector<double>(INPUT+1,0.0));
     std::vector< std::vector<double> > testData(TEST_SIZE, std::vector<double>(INPUT+1,0.0));
 
-    const bool shuffleData = false;
     loadFromFile(bigData, "../../lib/libdfr-neural/train.txt");
     buildData(bigData, trainData, TRAIN_SIZE, testData, TEST_SIZE, shuffleData);
-
-    /*
-    std::cout << std::endl;
-    for (int idx = 0; idx < 5; idx++) {
-        auto label = trainData[idx][0];
-        std::cout << label << std::endl;
-        for (int j = 1; j<FRAMESIZE; ++j) {
-            std::cout << (trainData[idx][j] > 0 ? 1:0);
-            if (j % 28 == 0) {
-                std::cout << std::endl;
-            }
-        }
-        std::cout << std::endl;
-    }
-    */
-
     std::cout << "done" << std::endl;
 
     // loop over training data points and train net
@@ -102,20 +94,8 @@ int main()
         double label = data[0];                             // extract point label
         data.erase(data.begin());
         std::vector<double> nLabel = encode(vecIntType(label));    // encode to 1-of-N
-
-        /*
-        std::cout << label << std::endl;
-        for (int j=0; j<FRAMESIZE; ++j) {
-            std::cout << (data[j] > 0 ? 1:0);
-            if (j % 28 == 0) {
-                std::cout << std::endl;
-            }
-        }
-        std::cout << std::endl;
-        */
-
-        std::vector<double> outputs = DigitNet.runNet(data);
-        error = DigitNet.trainNet(data, nLabel, outType);    // train net, return MSE
+        std::vector<double> outputs = DigitNet.runNet(data, useDropout);
+        error = DigitNet.trainNet(data, nLabel, outType, useDropout);    // train net, return MSE
 
         // decode output and compare to correct output
         if (decode(outputs) == vecIntType(label)) {
@@ -141,7 +121,7 @@ int main()
         double label = data[0];                     // extract label
         data.erase(data.begin());
 
-        std::vector<double> outputs = DigitNet.runNet(data);    // run net
+        std::vector<double> outputs = DigitNet.runNet(data, useDropout);    // run net
 
         /*
         if (i % 10 == 0) {
@@ -232,4 +212,16 @@ void loadFromFile(std::vector< std::vector<double> >& vec, const char filename[]
         }
         inp.close();
     }
+}
+
+void printDigit(const vecIntType label, std::vector<double>& data)
+{
+    std::cout << label << std::endl;
+    for (int j=0; j<FRAMESIZE; ++j) {
+        std::cout << (data[j] > 0 ? 1:0);
+        if (j % 28 == 0) {
+            std::cout << std::endl;
+        }
+    }
+    std::cout << std::endl;
 }
