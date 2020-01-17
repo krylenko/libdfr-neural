@@ -26,7 +26,9 @@ public:
     
     vecIntType numLayers() { return m_layers.size(); }
     
-    void setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType);
+    void setParams(const double rate, const double momentum, const double decay,
+                   const unsigned outType, const bool useBias=true,
+                   const unsigned weightInitType=SQRT, const int randSeed=int(time(nullptr)));
 
     bool saveNet( const char * filename=nullptr );
 

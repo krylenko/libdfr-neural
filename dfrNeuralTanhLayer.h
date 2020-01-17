@@ -6,7 +6,7 @@
 class NeuralTanhLayer: public NeuralLayer
 {
 public:
-    NeuralTanhLayer(const vecIntType inputs, const vecIntType nodes, const int randSeed=-1);
+    NeuralTanhLayer(const vecIntType inputs, const vecIntType nodes);
     virtual ~NeuralTanhLayer();
     
     virtual std::vector<double> computeOutputs(const std::vector<double>& inputs,

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-#include <time.h>
+#include <ctime>
 #include <vector>
 #include <fstream>
 
@@ -56,9 +56,9 @@ int main()
     std::cout << "initializing network..." << "\t \t";
     NeuralNet DigitNet;
 
-    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT, HIDDEN_1, seed);
+    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(INPUT, HIDDEN_1);
     DigitNet.addLayer(pHiddenLayer1);
-    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT, seed);
+    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT);
     DigitNet.addLayer(pOutputLayer);
     const unsigned int outType = PROB;
 

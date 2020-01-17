@@ -7,8 +7,7 @@ class NeuralLinearLayer: public NeuralLayer
 {
 
   public:
-    NeuralLinearLayer(const vecIntType inputs, const vecIntType nodes,
-                      const int randSeed=-1);
+    NeuralLinearLayer(const vecIntType inputs, const vecIntType nodes);
     ~NeuralLinearLayer();
     
   protected:

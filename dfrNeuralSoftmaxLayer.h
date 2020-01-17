@@ -6,7 +6,7 @@
 class NeuralSoftmaxLayer: public NeuralLayer
 {
 public:
-    NeuralSoftmaxLayer(const vecIntType inputs, const vecIntType nodes, const int randSeed=-1);
+    NeuralSoftmaxLayer(const vecIntType inputs, const vecIntType nodes);
     virtual ~NeuralSoftmaxLayer();
     
     virtual std::vector<double> computeOutputs(const std::vector<double>& inputs,

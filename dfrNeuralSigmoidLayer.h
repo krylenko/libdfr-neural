@@ -6,7 +6,7 @@
 class NeuralSigmoidLayer: public NeuralLayer
 {
 public:
-    NeuralSigmoidLayer(const vecIntType inputs, const vecIntType nodes, const int randSeed=-1);
+    NeuralSigmoidLayer(const vecIntType inputs, const vecIntType nodes);
     virtual ~NeuralSigmoidLayer();
     
     virtual std::vector<double> computeOutputs(const std::vector<double>& inputs,

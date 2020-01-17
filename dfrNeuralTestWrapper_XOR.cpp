@@ -11,15 +11,14 @@ int main(int, char**)
 { 
     const unsigned iters = 5000;
     const unsigned testers = 2500;
-    int seed = int(time(nullptr));
 
     // create network
     NeuralNet network;
 
-    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(2, 12, seed);
+    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(2, 12);
     network.addLayer(pHiddenLayer1);
 
-    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(12, 2, seed);
+    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(12, 2);
     //NeuralLayer * pOutputLayer = new NeuralLinearLayer(48, 1, seed);
     network.addLayer(pOutputLayer);
 

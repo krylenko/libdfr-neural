@@ -27,12 +27,21 @@ void NeuralNet::addLayer(NeuralLayer * layer)
     m_layers.push_back(layer);
 }
 
-void NeuralNet::setParams(const double& rate, const double& momentum, const double& decay, const unsigned int& outType)
+void NeuralNet::setParams(const double rate, const double momentum, const double decay,
+                          const unsigned outType, const bool useBias,
+                          const unsigned weightInitType, const int randSeed)
 {
     m_learningRate = rate;
     m_weightDecay = decay;
     m_momentum = momentum;
     m_outType = outType;
+
+    // seed random number generator
+    srand(unsigned(randSeed));
+
+    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
+        (*it)->initLayer(useBias, weightInitType);
+    }
 }
 
 std::vector<double> NeuralNet::minusVec(std::vector<double> one, std::vector<double> two)
@@ -75,7 +84,7 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
           delta = m_layers[i-1]->computeDeltas(error, m_layers[i]->retrieveWeights());
         }
         prevOut = (i > 1) ? m_layers[i-1-1]->retrieveOutputs() : data;
-        m_layers[i-1]->updateWeights( prevOut, delta, m_learningRate, m_momentum, m_weightDecay );
+        m_layers[i-1]->updateWeights(prevOut, delta, m_learningRate, m_momentum, m_weightDecay);
         error = delta;
     }
     return cost;
