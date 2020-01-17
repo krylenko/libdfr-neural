@@ -20,27 +20,29 @@ public:
   
     void addLayer(NeuralLayer * layer);
     
-    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const unsigned int outType, const bool dropout=false);
+    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const bool dropout=false);
     
     std::vector<double> runNet(const std::vector<double>& data, const bool dropout=false);
     
     vecIntType numLayers() { return m_layers.size(); }
     
-    void setParams(const double rate, const double momentum, const double decay,
-                   const unsigned outType, const bool useBias=true,
-                   const unsigned weightInitType=SQRT, const int randSeed=int(time(nullptr)));
+    void init(const double rate, const double momentum, const double decay,
+              const bool useBias=true, const unsigned weightInitType=SQRT,
+              const int randSeed=int(time(nullptr)));
 
-    bool saveNet( const char * filename=nullptr );
+    bool saveNet(const char * filename=nullptr);
 
-    bool loadNet( const char * filename );
+    bool loadNet(const char * filename);
   
+    unsigned outType() {return m_outType;}
+
 private:
 
     std::vector<NeuralLayer *> m_layers;
     double m_learningRate;
     double m_momentum;
     double m_weightDecay;
-    unsigned int m_outType;
+    unsigned m_outType;
     
     std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
     

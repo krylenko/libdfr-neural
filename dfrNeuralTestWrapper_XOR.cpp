@@ -1,8 +1,8 @@
 // neural net example script: learning XOR
 
 #include <iostream>
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
 #include "dfrNeuralNet.h"
 
 std::vector<double> XOR_training(const bool softmax);
@@ -14,30 +14,20 @@ int main(int, char**)
 
     // create network
     NeuralNet network;
+    network.addLayer(new NeuralTanhLayer(2, 12));
+    network.addLayer(new NeuralSoftmaxLayer(12, 2));
 
-    NeuralLayer * pHiddenLayer1 = new NeuralTanhLayer(2, 12);
-    network.addLayer(pHiddenLayer1);
+    // set learning rate, momentum, decay rate
+    network.init(0.01, 0, 0);
 
-    NeuralLayer * pOutputLayer = new NeuralSoftmaxLayer(12, 2);
-    //NeuralLayer * pOutputLayer = new NeuralLinearLayer(48, 1, seed);
-    network.addLayer(pOutputLayer);
-
-    // set learning rate, momentum, decay rate, output type
-    // SCALAR = tanh or sigmoid output layer (use one output neuron)
-    // PROB = softmax output layer, 1-of-C output encoding (use two output neurons)
-    const unsigned int outType = PROB;
-    //const unsigned int outType = SCALAR;
-    network.setParams(0.01, 0, 0, outType);
-
-    int rightCount = 0;
-
-    for (unsigned i=0; i<iters+testers; ++i) {
+    // training
+    for (unsigned i = 0; i < iters; ++i) {
         double error = 0.0;
         std::vector<double> exor, training;
 
         // generate training data
         bool softmax = false;
-        switch(outType)
+        switch(network.outType())
         {
         case SCALAR:
             exor = XOR_training(softmax);
@@ -53,44 +43,49 @@ int main(int, char**)
             exor.pop_back();
             break;
         }
-
-        // training
-        if (i<iters){
-            std::vector<double> outputs = network.runNet(exor);
-            error = network.trainNet(exor, training, outType);
-            switch(outType)
-            {
-            case SCALAR:
-              //std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << ", " << error << std::endl;
-              break;
-            case PROB:
-              //std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << " | " << outputs[1] << ", " << error << std::endl;
-              break;
-            }
+        std::vector<double> outputs = network.runNet(exor);
+        error = network.trainNet(exor, training);
+        /*
+        switch(network.outType())
+        {
+        case SCALAR:
+          //std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << ", " << error << std::endl;
+          break;
+        case PROB:
+          //std::cout << exor[0] << " ^ " << exor[1] << " = " << outputs[0] << " | " << outputs[1] << ", " << error << std::endl;
+          break;
         }
+        */
+    }
 
-        // testing
-        if (i >= iters) {
-            std::vector<double> outputs = network.runNet(exor);
-            unsigned out = 0;
-            switch(outType)
-            {
-            case SCALAR:
-                out = ((outputs[0] > 0.5) ? 1 : 0);
-                if (out == unsigned(training[0])) {
-                    ++rightCount;
-                  }
-                break;
-            case PROB:
-                vecIntType classLabel = 0;
-                if (outputs[0] < outputs[1]) {
-                    classLabel = 1;
-                }
-                if (1 == vecIntType(training[classLabel])) {
-                    ++rightCount;
-                }
-                break;
-            }
+    // testing
+    int rightCount = 0;
+    for (unsigned i = 0; i < testers; ++i) {
+
+        bool softmax = network.outType() == SCALAR ? false : true;
+        std::vector<double> exor = XOR_training(softmax);
+
+        unsigned out, correctLabel;
+        std::vector<double> outputs;
+        switch(network.outType())
+        {
+        case SCALAR:
+            correctLabel = unsigned(exor[2]);
+            exor.pop_back();
+            outputs = network.runNet(exor);
+            out = ((outputs[0] > 0.5) ? 1 : 0);
+            break;
+        case PROB:
+            correctLabel = unsigned(exor[2] > exor[3] ? 0 : 1);
+            exor.pop_back();
+            exor.pop_back();
+            outputs = network.runNet(exor);
+            out = (outputs[0] > outputs[1]) ? 0 : 1;
+            break;
+        }
+        //std::cout << exor[0] << " ^ " << exor[1] << " = " << correctLabel << " , " << out << std::endl;
+        if (out == correctLabel) {
+            ++rightCount;
         }
     }
     std::cout << std::endl << "accuracy: " << 100.0 * rightCount / testers << "%" << std::endl;

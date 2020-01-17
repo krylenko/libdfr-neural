@@ -17,7 +17,7 @@ NeuralNet::NeuralNet()
 
 NeuralNet::~NeuralNet()
 {
-    for (std::vector<NeuralLayer *>::iterator it=m_layers.begin(); it!=m_layers.end(); ++it) {
+    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
         delete *it;
     }
 }
@@ -27,20 +27,19 @@ void NeuralNet::addLayer(NeuralLayer * layer)
     m_layers.push_back(layer);
 }
 
-void NeuralNet::setParams(const double rate, const double momentum, const double decay,
-                          const unsigned outType, const bool useBias,
-                          const unsigned weightInitType, const int randSeed)
+void NeuralNet::init(const double rate, const double momentum, const double decay,
+                     const bool useBias, const unsigned weightInitType, const int randSeed)
 {
     m_learningRate = rate;
     m_weightDecay = decay;
     m_momentum = momentum;
-    m_outType = outType;
 
     // seed random number generator
     srand(unsigned(randSeed));
 
     for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
         (*it)->initLayer(useBias, weightInitType);
+        m_outType = (*it)->getType() == SOFTMAX ? PROB : SCALAR;
     }
 }
 
@@ -63,7 +62,7 @@ double computeMSE(const std::vector<double>& error)
     return 0.5 * MSE;
 }
 
-double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput, const unsigned int outType, const bool dropout)
+double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput, const bool dropout)
 { 
     vecIntType outputLayer = m_layers.size();
 
@@ -73,7 +72,7 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
     // run net forward
     output = runNet(data, dropout);
     error = computeError(output, trainingOutput);
-    cost = (outType == SCALAR) ? computeMSE(error) : logloss(output, trainingOutput);
+    cost = (m_outType == SCALAR) ? computeMSE(error) : logloss(output, trainingOutput);
 
     // propagate error backward through layers
     for (vecIntType i=outputLayer; i>0; i--) {
@@ -174,7 +173,7 @@ bool NeuralNet::saveNet( const char * filename )
     return true;
 }
 
-bool NeuralNet::loadNet( const char * filename )
+bool NeuralNet::loadNet(const char * filename)
 {
     // check for existing layers
     if (numLayers() != 0) {
@@ -190,13 +189,11 @@ bool NeuralNet::loadNet( const char * filename )
     double learnRate = 0.0;
     double mom = 0.0;
     double decay = 0.0;
-    unsigned int outType = 0;
     inp >> loadLayers;
     inp >> learnRate;
     inp >> mom;
     inp >> decay;
-    inp >> outType;
-    setParams(learnRate, mom, decay, outType);
+    init(learnRate, mom, decay);
 
     // construct network
     for (unsigned int m=0; m<loadLayers; ++m) {
@@ -216,16 +213,16 @@ bool NeuralNet::loadNet( const char * filename )
         switch(type)
         {
         case(LINEAR):
-            pHiddenLayer = new NeuralLinearLayer(inputs,nodes);
+            pHiddenLayer = new NeuralLinearLayer(inputs, nodes);
             break;
         case(TANH):
-            pHiddenLayer = new NeuralTanhLayer(inputs,nodes);
+            pHiddenLayer = new NeuralTanhLayer(inputs, nodes);
             break;
         case(SIGMOID):
-            pHiddenLayer = new NeuralSigmoidLayer(inputs,nodes);
+            pHiddenLayer = new NeuralSigmoidLayer(inputs, nodes);
             break;
         case(SOFTMAX):
-            pHiddenLayer = new NeuralSoftmaxLayer(inputs,nodes);
+            pHiddenLayer = new NeuralSoftmaxLayer(inputs, nodes);
             break;
         }
         pHiddenLayer->loadWeights(weights);
