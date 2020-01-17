@@ -1,6 +1,8 @@
 #ifndef DFRNEURALNET_H
 #define DFRNEURALNET_H
 
+#include <algorithm>
+
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralLinearLayer.h"
 #include "dfrNeuralTanhLayer.h"
@@ -20,14 +22,14 @@ public:
   
     void addLayer(NeuralLayer * layer);
     
-    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput, const bool dropout=false);
+    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
     
-    std::vector<double> runNet(const std::vector<double>& data, const bool dropout=false);
+    std::vector<double> runNet(const std::vector<double>& data);
     
     vecIntType numLayers() { return m_layers.size(); }
     
-    void init(const double rate, const double momentum, const double decay,
-              const bool useBias=true, const unsigned weightInitType=SQRT,
+    void init(const double learningRate, const double momentum, const double decayRate,
+              const double dropoutRate=1.0, const unsigned weightInitType=SQRT,
               const int randSeed=int(time(nullptr)));
 
     bool saveNet(const char * filename=nullptr);
@@ -38,19 +40,20 @@ public:
 
 private:
 
+    std::vector<double> minusVec(const std::vector<double>& one, const std::vector<double>& two);
+    
+    std::vector<double> computeOutput(const std::vector<double>& inputs, const bool training=true);
+    
+    std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
+
+    double logLoss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
+
     std::vector<NeuralLayer *> m_layers;
     double m_learningRate;
     double m_momentum;
     double m_weightDecay;
+    double m_dropoutRate;
     unsigned m_outType;
-    
-    std::vector<double> minusVec(std::vector<double> one, std::vector<double> two);
-    
-    std::vector<double> computeOutput(const std::vector<double> & inputs, const bool dropout);
-    
-    std::vector<double> computeError(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
-
-    double logloss(const std::vector<double>& netOutput, const std::vector<double>& labeledOutput);
 
 };
 

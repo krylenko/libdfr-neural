@@ -8,62 +8,48 @@
 NeuralLayer::NeuralLayer(const vecIntType inputs, const vecIntType nodes)
     : m_numInputs(inputs)
     , m_numNodes(nodes)
-    , m_weights(m_numInputs, std::vector<double>(m_numNodes, 0.0))
+    , m_weights(m_numInputs + 1, std::vector<double>(m_numNodes, 0.0))
+    , m_biases(m_numNodes, 0.0)
     , m_output(m_numNodes, 0.0)
-    , m_nextDeltas(m_numInputs, std::vector<double>(m_numNodes, 0.0))
+    , m_nextDeltas(m_numInputs + 1, std::vector<double>(m_numNodes, 0.0))
 {
 }
 
-void NeuralLayer::initLayer(const bool useBias, const unsigned weightInitType)
+void NeuralLayer::initLayer(const unsigned weightInitType)
 {
-    m_useBias = useBias;
-    m_inputEndIdx = m_useBias ? m_numInputs + 1 : m_numInputs;
-    if (m_useBias) {
-        auto emptyVec = std::vector<double>(m_numNodes, 0.0);
-        m_biases = emptyVec;
-        m_weights.push_back(emptyVec);
-        m_nextDeltas.push_back(emptyVec);
-    }
-    double r = 1.0 / sqrt(double(m_numInputs));
-    switch(weightInitType)
-    {
-    case SQRT:
+    if (weightInitType == SQRT) {
+        double r = 1.0 / sqrt(double(m_numInputs));
         for (vecIntType j = 0; j < m_numNodes; ++j) {
-            if (m_useBias) {
-                m_biases[j] = 1.0;
-            }
-            for (vecIntType i = 0; i < m_inputEndIdx; ++i) {
+            m_biases[j] = 1.0;
+            for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
                 m_weights[i][j] = (2.0 * r * rand()/double(RAND_MAX)) - r;
             }
         }
-        break;
-    case TRUNC_NORM:
-        break;
+    } else if (weightInitType == TRUNC_NORM) {
+
     }
 }
 
 std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& inputs,
-                                                const bool dropout)
+                                                const bool training, const double dropoutRate)
 {
-    assert( m_numInputs == inputs.size() );
+    assert(m_numInputs == inputs.size());
     std::vector<double> outputs(m_numNodes, 0.0);
-
-    vecIntType startIdx = 0;
-    vecIntType endIdx = m_numInputs;
-    if (m_useBias) {
-        startIdx = 1;
-        endIdx += 1;
-    }
-
     for (vecIntType j = 0; j < m_numNodes; ++j) {
-        if (m_useBias) {
-            outputs[j] = m_biases[j] * m_weights[0][j];
+        outputs[j] = m_biases[j] * m_weights[0][j];
+        for (vecIntType i = 1; i < m_numInputs + 1; ++i) {
+            outputs[j] += inputs[i-1] * m_weights[i][j];
         }
-        for (vecIntType i = startIdx; i < endIdx; ++i) {
+    }
+    // apply dropout and scale outputs to adjust magnitudes for dropped-out nodes
+    if (training && (dropoutRate < 1.0)) {
+        for (vecIntType k = 0; k < m_numNodes; ++k) {
             double dropoutRand = rand() / double(RAND_MAX);
-            if (!dropout || dropoutRand > 0.5) {
-                outputs[j] += inputs[i-1] * m_weights[i][j];
-            }
+                if (dropoutRand >= dropoutRate) {
+                    outputs[k] /= dropoutRate;
+                } else {
+                    outputs[k] = 0.0;
+                }
         }
     }
     m_output = outputs;
@@ -75,13 +61,8 @@ std::vector<double> NeuralLayer::computeDeltas(const std::vector<double>& error,
     static unsigned int first = 1;
     vecIntType nextLayerOuts = first ? error.size() : (error.size() - 1);
 
-    vecIntType numNodes = m_numNodes;
-    if (m_useBias) {
-        numNodes += 1;
-    }
-
-    std::vector<double> deltas(numNodes);
-    for (vecIntType j = 0; j < numNodes; ++j) {
+    std::vector<double> deltas(m_numNodes + 1);
+    for (vecIntType j = 0; j < m_numNodes + 1; ++j) {
         for (vecIntType i = 0; i < nextLayerOuts; ++i) {
             deltas[j] += (first ? (error[i] * nextWeights[j][i]) : (error[i+1] * nextWeights[j][i]));
         }

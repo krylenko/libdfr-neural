@@ -10,7 +10,7 @@ public:
     virtual ~NeuralSigmoidLayer();
     
     virtual std::vector<double> computeOutputs(const std::vector<double>& inputs,
-                                               const bool dropout);
+                                               const bool training, const double dropoutRate);
     
     virtual void updateWeights(const std::vector<double>& prevOut, const std::vector<double>& deltas,
                                const double learningRate, const double momentum, const double decayRate);

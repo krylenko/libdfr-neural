@@ -14,10 +14,10 @@ NeuralTanhLayer::~NeuralTanhLayer()
 }
 
 std::vector<double> NeuralTanhLayer::computeOutputs(const std::vector<double>& inputs,
-                                                    const bool dropout)
+                                                    const bool training, const double dropoutRate)
 {
     std::vector<double> outs(m_numNodes);
-    outs = NeuralLayer::computeOutputs(inputs, dropout);
+    outs = NeuralLayer::computeOutputs(inputs, training, dropoutRate);
     for (std::vector<double>::iterator it=outs.begin(); it!=outs.end(); ++it) {
         *it = tanh(*it);
     }
@@ -28,7 +28,7 @@ std::vector<double> NeuralTanhLayer::computeOutputs(const std::vector<double>& i
 void NeuralTanhLayer::updateWeights(const std::vector<double>& prevOut, const std::vector<double>& deltas,
                                     const double learningRate, const double momentum, const double decayRate)
 {
-    for (vecIntType i = 0; i < m_inputEndIdx; ++i) {
+    for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
         for (vecIntType j = 0; j < m_numNodes; ++j) {
             double prev = (i == 0) ? 1.0 : prevOut[i-1];
             double deltaW = learningRate * (deltas[j] * (1.0 - (m_output[j] * m_output[j])) *

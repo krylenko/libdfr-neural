@@ -17,8 +17,8 @@ int main(int, char**)
     network.addLayer(new NeuralTanhLayer(2, 12));
     network.addLayer(new NeuralSoftmaxLayer(12, 2));
 
-    // set learning rate, momentum, decay rate
-    network.init(0.01, 0, 0);
+    // set learning rate, momentum, decay rate, dropout rate
+    network.init(0.01, 0, 0, 1.0);
 
     // training
     for (unsigned i = 0; i < iters; ++i) {

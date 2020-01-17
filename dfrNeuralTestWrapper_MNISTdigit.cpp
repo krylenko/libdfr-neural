@@ -33,11 +33,11 @@ int main()
 {
 
     const bool randomize = true;
-    const bool useDropout = false;
 
     const double learningRate = 0.05;
     const double momentum =     0.0;
     const double decayRate =    0.0;
+    const double dropoutRate =  1.0;
 
     unsigned seed = FROZEN_SEED;
     bool shuffleData = false;
@@ -60,8 +60,8 @@ int main()
     DigitNet.addLayer(new NeuralTanhLayer(INPUT, HIDDEN_1));
     DigitNet.addLayer(new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT));
 
-    // set learning rate, momentum, decay rate
-    DigitNet.init(learningRate, momentum, decayRate);
+    // set params, which also initializes net
+    DigitNet.init(learningRate, momentum, decayRate, dropoutRate);
     std::cout << "done" << std::endl;
 
     // load training and test data
@@ -89,8 +89,8 @@ int main()
         double label = data[0];                             // extract point label
         data.erase(data.begin());
         std::vector<double> nLabel = encode(vecIntType(label));    // encode to 1-of-N
-        std::vector<double> outputs = DigitNet.runNet(data, useDropout);
-        error = DigitNet.trainNet(data, nLabel, useDropout);    // train net, return MSE
+        std::vector<double> outputs = DigitNet.runNet(data);
+        error = DigitNet.trainNet(data, nLabel);    // train net, return MSE
 
         // decode output and compare to correct output
         if (decode(outputs) == vecIntType(label)) {
@@ -116,7 +116,7 @@ int main()
         double label = data[0];                     // extract label
         data.erase(data.begin());
 
-        std::vector<double> outputs = DigitNet.runNet(data, useDropout);    // run net
+        std::vector<double> outputs = DigitNet.runNet(data);    // run net
 
         /*
         if (i % 10 == 0) {

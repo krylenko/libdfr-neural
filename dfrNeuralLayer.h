@@ -33,9 +33,9 @@ public:
 
     virtual void loadWeights(const std::vector<std::vector<double> > newWeights) {m_weights = newWeights;}
 
-    virtual void initLayer(const bool useBias, const unsigned weightInitType);
+    virtual void initLayer(const unsigned weightInitType);
 
-    virtual std::vector<double> computeOutputs(const std::vector<double>& inputs, const bool dropout);
+    virtual std::vector<double> computeOutputs(const std::vector<double>& inputs, const bool training, const double dropoutRate);
 
     virtual std::vector<double> computeDeltas(const std::vector<double>& error,
                                               const std::vector<std::vector<double> >& nextWeights);
@@ -45,8 +45,6 @@ public:
 
 protected:
   
-    bool m_useBias;
-    vecIntType m_inputEndIdx;
     vecIntType m_type;
     vecIntType m_numInputs;
     vecIntType m_numNodes;
