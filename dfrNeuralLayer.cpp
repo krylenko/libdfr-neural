@@ -1,5 +1,7 @@
 #include "dfrNeuralLayer.h"
+
 #include <iostream>
+#include <numeric>
 #include <cassert>
 #include <ctime>
 #include <cmath>
@@ -17,16 +19,24 @@ NeuralLayer::NeuralLayer(const vecIntType inputs, const vecIntType nodes)
 
 void NeuralLayer::initLayer(const unsigned weightInitType)
 {
-    if (weightInitType == SQRT) {
-        double r = 1.0 / sqrt(double(m_numInputs));
-        for (vecIntType j = 0; j < m_numNodes; ++j) {
-            m_biases[j] = 1.0;
-            for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
-                m_weights[i][j] = (2.0 * r * rand()/double(RAND_MAX)) - r;
+    double r = 0.0, initWeight = 0.0;
+    for (vecIntType j = 0; j < m_numNodes; ++j) {
+        m_biases[j] = 1.0;
+        for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
+            double uniform = 2.0 * rand()/double(RAND_MAX);
+            switch(weightInitType)
+            {
+            case SQRT:
+                r = 1.0 / sqrt(double(m_numInputs));
+                initWeight = (r * uniform) - r;
+                break;
+            case TRUNC_NORM:
+                r = std::max(-1.0, uniform - 1.0);
+                initWeight = std::min(1.0, r);
+                break;
             }
+            m_weights[i][j] = initWeight;
         }
-    } else if (weightInitType == TRUNC_NORM) {
-
     }
 }
 
