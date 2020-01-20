@@ -34,7 +34,7 @@ void NeuralNet::addLayer(NeuralLayer * layer)
 }
 
 void NeuralNet::init(const double learningRate, const double momentum, const double decayRate,
-                     const double dropoutRate, const unsigned weightInitType, const int randSeed)
+                     const double dropoutRate, const int randSeed, const unsigned weightInitType)
 {
     m_learningRate = boundZeroOne(learningRate);
     m_weightDecay = boundZeroOne(decayRate);
@@ -241,4 +241,25 @@ bool NeuralNet::loadNet(const char * filename)
     }
     inp.close();
     return true;
+}
+
+// convert single input digit label into 1-of-N encoded matrix
+std::vector<double> NeuralNet::encodeOneHot(const vecIntType digit)
+{
+    std::vector<double> output(10, 0.);
+    output[digit] = 1.;
+    return output;
+}
+
+// convert 1-of-N float output matrix to single digit
+vecIntType NeuralNet::decodeOneHot(std::vector<double>& netOut)
+{
+    vecIntType digit = 0; double tmp = netOut[0];
+    for (vecIntType i = 0;i<10;++i) {
+        if (netOut[i] > tmp) {
+            digit = i;
+            tmp = netOut[i];
+        }
+    }
+    return digit;
 }

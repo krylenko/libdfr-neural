@@ -29,14 +29,20 @@ public:
     vecIntType numLayers() { return m_layers.size(); }
     
     void init(const double learningRate, const double momentum, const double decayRate,
-              const double dropoutRate=1.0, const unsigned weightInitType=SQRT,
-              const int randSeed=int(time(nullptr)));
+              const double dropoutRate=1.0, const int randSeed=int(time(nullptr)),
+              const unsigned weightInitType=SQRT);
 
     bool saveNet(const char * filename=nullptr);
 
     bool loadNet(const char * filename);
   
     unsigned outType() {return m_outType;}
+
+    // convert single input digit label into 1-of-N encoded matrix
+    std::vector<double> encodeOneHot(const vecIntType digit);
+
+    // convert 1-of-N float output matrix to single digit
+    vecIntType decodeOneHot(std::vector<double>& netOut);
 
 private:
 

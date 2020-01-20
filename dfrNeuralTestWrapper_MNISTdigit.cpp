@@ -18,26 +18,23 @@
 #define FROZEN_SEED     1029
 
 // fn prototypes
-std::vector<double> encode(const vecIntType digit);
-vecIntType decode(std::vector<double>& netOut);
 void printDigit(const vecIntType label, std::vector<double>& data);
 
 int main()
 {
     const std::string dataFilePath = "../../lib/libdfr-neural/train.txt";
+    const double dataLimitRatio = 0.025;
+
     const unsigned long labelLength = 1;
     const unsigned long dataPtLength = INPUT;
     const double dataScaleFactor = 1./255.;
-    const double dataLimitRatio = 0.25;
-    const bool shuffle = false;
+
+    const bool shuffleData = true;
 
     const double learningRate = 0.05;
     const double momentum =     0.0;
     const double decayRate =    0.0;
     const double dropoutRate =  0.5;
-
-    // init random number generator
-    srand(unsigned(time(nullptr)));
 
     // init variables
     double error = 0.;
@@ -59,7 +56,7 @@ int main()
     std::cout << "loading data..." << "\t \t \t";
 
     DataLoader loader(dataFilePath, labelLength, dataPtLength, dataScaleFactor, dataLimitRatio);
-    loader.splitTrainTest(shuffle);
+    loader.splitTrainTest(shuffleData);
 
     std::cout << "train " << loader.numTrainPoints() << ", test " << loader.numTestPoints() <<
                  ", total " << loader.numPoints() << std::endl;
@@ -71,12 +68,12 @@ int main()
         auto thisPt = loader.trainDataPoint();
         auto label = thisPt.first;
         auto data = thisPt.second;
-        std::vector<double> nLabel = encode(vecIntType(label[0]));    // encode to 1-of-N
+        std::vector<double> nLabel = DigitNet.encodeOneHot(vecIntType(label[0]));    // encode to 1-of-N
         std::vector<double> outputs = DigitNet.runNet(data);
         error = DigitNet.trainNet(data, nLabel);    // train net, return MSE
 
         // decode output and compare to correct output
-        if (decode(outputs) == vecIntType(label[0])) {
+        if (DigitNet.decodeOneHot(outputs) == vecIntType(label[0])) {
             truecnt++;
         }
     }
@@ -101,7 +98,7 @@ int main()
         std::vector<double> outputs = DigitNet.runNet(data);    // run net
 
         // decode output and compare to correct output
-        if (decode(outputs) == vecIntType(label[0])) {
+        if (DigitNet.decodeOneHot(outputs) == vecIntType(label[0])) {
             truecnt++;
         }
     }
@@ -111,27 +108,6 @@ int main()
     times = timed - times;
     std::cout << "testing time: " << "\t \t \t" << times << " seconds " << std::endl;
     std::cout << "test accuracy: " << "\t \t \t" << truecnt * 100. / loader.numTestPoints() << "% " << std::endl;
-}
-
-// convert single input digit label into 1-of-10 encoded matrix
-std::vector<double> encode(const vecIntType digit)
-{
-    std::vector<double> output(10, 0.);
-    output[digit] = 1.;
-    return output;
-}
-
-// convert 1-of-10 float output matrix to single digit
-vecIntType decode(std::vector<double>& netOut)
-{
-    vecIntType digit = 0; double tmp = netOut[0];
-    for (vecIntType i = 0;i<10;++i) {
-        if (netOut[i] > tmp) {
-            digit = i;
-            tmp = netOut[i];
-        }
-    }
-    return digit;
 }
 
 void printDigit(const vecIntType label, std::vector<double>& data)
