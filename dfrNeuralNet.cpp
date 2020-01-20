@@ -69,6 +69,31 @@ double computeMSE(const std::vector<double>& error)
     return 0.5 * MSE;
 }
 
+std::pair<double, double> NeuralNet::train(DataLoader* dataset, const unsigned long epochs,
+                                           const bool shuffleData)
+{
+    double error = 0.0;
+    unsigned long trueCount = 0;
+    for (unsigned long p = 0; p < epochs; ++p) {
+        dataset->splitTrainTest(shuffleData);
+        for (vecIntType i = 0; i < dataset->numTrainPoints(); ++i) {
+            auto thisPt = dataset->trainDataPoint();
+            auto label = thisPt.first[0];
+            auto data = thisPt.second;
+            std::vector<double> nLabel = encodeOneHot(vecIntType(label));
+            std::vector<double> outputs = runNet(data);
+            error = trainNet(data, nLabel);
+
+            // decode output and compare to correct output
+            if (decodeOneHot(outputs) == vecIntType(label)) {
+                trueCount++;
+            }
+        }
+    }
+    double accuracy = trueCount * 100. / (dataset->numTrainPoints() * epochs);
+    return std::make_pair(accuracy, error);
+}
+
 double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput)
 { 
     vecIntType outputLayer = m_layers.size();
@@ -94,6 +119,24 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
         error = delta;
     }
     return cost;
+}
+
+double NeuralNet::test(DataLoader* dataset)
+{
+    unsigned long trueCount = 0;
+    for (vecIntType i = 0; i < dataset->numTestPoints(); ++i) {
+        auto testPt = dataset->testDataPoint();
+        auto label = testPt.first[0];
+        auto data = testPt.second;
+
+        std::vector<double> outputs = runNet(data);    // run net
+
+        // decode output and compare to correct output
+        if (decodeOneHot(outputs) == vecIntType(label)) {
+            trueCount++;
+        }
+    }
+    return trueCount * 100. / dataset->numTestPoints();
 }
 
 std::vector<double> NeuralNet::runNet(const std::vector<double>& data)
