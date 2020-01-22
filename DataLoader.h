@@ -14,17 +14,18 @@ class DataLoader
 public:
     DataLoader(const std::string filename, const unsigned long dataPtLen,
                const unsigned long labelLen, const double dataScalingFactor,
-               const double limitFrac=1.0);
+               const double limitFrac=1.0, const double trainValidateFrac=1.0);
     ~DataLoader();
+
+    DataMap_t* extractHoldoutSet(const double sizeFrac=0.1);
+    void splitTrainTest(const bool shuffle=false);
+
+    DataPt_t trainDataPoint();
+    DataPt_t testDataPoint();
 
     unsigned long numPoints() { return numPts; }
     unsigned long numTestPoints() { return numTestPts; }
     unsigned long numTrainPoints() { return numTrainPts; }
-
-    void splitTrainTest(const bool shuffle=false, const double trainTestRatio=0.8);
-
-    DataPt_t trainDataPoint();
-    DataPt_t testDataPoint();
 
 private:
 
@@ -32,6 +33,7 @@ private:
 
     const std::string filename;
     const double limitFrac;
+    const double trainValFrac;
     unsigned long dataLabelLen;
     unsigned long dataPtLen;
     unsigned long numPts;

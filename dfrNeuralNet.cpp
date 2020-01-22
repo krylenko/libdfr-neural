@@ -139,6 +139,24 @@ double NeuralNet::test(DataLoader* dataset)
     return trueCount * 100. / dataset->numTestPoints();
 }
 
+double NeuralNet::test(DataMap_t* data)
+{
+    unsigned long trueCount = 0;
+    for (auto it = data->begin(); it != data->end(); ++it) {
+        auto testPt = it->second;
+        auto label = testPt.first[0];
+        auto data = testPt.second;
+
+        std::vector<double> outputs = runNet(data);    // run net
+
+        // decode output and compare to correct output
+        if (decodeOneHot(outputs) == vecIntType(label)) {
+            trueCount++;
+        }
+    }
+    return trueCount * 100. / data->size();
+}
+
 std::vector<double> NeuralNet::runNet(const std::vector<double>& data)
 {
     const bool training = false;

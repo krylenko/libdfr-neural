@@ -7,9 +7,10 @@
 
 DataLoader::DataLoader(const std::string filename, const unsigned long labelLen,
                        const unsigned long dataPtLen, const double dataScalingFactor,
-                       const double limitFrac)
+                       const double limitFrac, const double trainValidateFrac)
     : filename(filename)
     , limitFrac((limitFrac < 0.0) ? 1.0 : limitFrac)
+    , trainValFrac(trainValidateFrac < 0.0 ? 1.0 : trainValidateFrac)
     , dataLabelLen(labelLen)
     , dataPtLen(dataPtLen)
     , numPts(0)
@@ -17,6 +18,7 @@ DataLoader::DataLoader(const std::string filename, const unsigned long labelLen,
     , numTestPts(0)
 {
     loadFromFile(dataScalingFactor);
+    splitTrainTest();
 }
 
 DataLoader::~DataLoader() {
@@ -77,9 +79,9 @@ void DataLoader::loadFromFile(const double dataScalingFactor)
     numPts = allData.size();
 }
 
-void DataLoader::splitTrainTest(const bool shuffle, const double trainTestRatio)
+void DataLoader::splitTrainTest(const bool shuffle)
 {
-    unsigned long trainLen = static_cast<unsigned long>(trainTestRatio * numPts);
+    unsigned long trainLen = static_cast<unsigned long>(trainValFrac * numPts);
     unsigned long testLen = numPts - trainLen;
 
     trainData.clear();
@@ -92,7 +94,7 @@ void DataLoader::splitTrainTest(const bool shuffle, const double trainTestRatio)
             unsigned long randIdx =
                     static_cast<unsigned long>(allData.size() * double(rand()) / double(RAND_MAX));
             if (usedIndices.find(randIdx) == usedIndices.end()) {
-                testData[randIdx] = allData[randIdx];
+                testData[randIdx] = allData.at(randIdx);
                 usedIndices[randIdx] = randIdx;
             }
         }
@@ -123,4 +125,23 @@ void DataLoader::splitTrainTest(const bool shuffle, const double trainTestRatio)
 
     assert(numTrainPts == trainLen);
     assert(numTestPts == testLen);
+}
+
+DataMap_t* DataLoader::extractHoldoutSet(const double sizeFrac)
+{
+    // TODO: randomly select a holdout set instead of slicing off the end of allData
+    DataMap_t* holdout(new DataMap_t);
+    const unsigned long holdoutPts = static_cast<unsigned long>(sizeFrac * numPts);
+    const unsigned long fullSize = allData.size();
+    for (unsigned long p = 0; p < holdoutPts; ++p) {
+        unsigned long ptIdx = (fullSize - 1) - p;
+        (*holdout)[ptIdx] = allData.at(ptIdx);
+    }
+    allData.erase(allData.find(holdoutPts), allData.end());
+    numPts = allData.size();
+    // verify that no elements of the holdout set are still present in the remaining data
+    for (auto it = holdout->begin(); it != holdout->end(); ++it) {
+        assert(allData.find(it->first) == allData.end());
+    }
+    return holdout;
 }

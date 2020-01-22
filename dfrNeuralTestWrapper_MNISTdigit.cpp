@@ -23,8 +23,10 @@ void printDigit(const vecIntType label, std::vector<double>& data);
 int main()
 {
     const std::string dataFilePath("../../lib/libdfr-neural/train.txt");
-    const double dataLimitRatio = 0.05;//25;
+    const double dataLimitRatio = 1.0;
+    const double testValidateRatio = 1.0;
     const unsigned epochs = 6;
+    auto thisSeed = time(nullptr);
 
     const unsigned long labelLength = 1;
     const unsigned long dataPtLength = INPUT;
@@ -37,26 +39,31 @@ int main()
     const double decayRate =    0.0;
     const double dropoutRate =  0.5;
 
-    std::cout << "CONFIG" << "\t \t" << std::endl;
+    std::cout << "initializing network..." << std::endl;
     std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
     std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
     std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl;
-    std::cout << "initializing network..." << "\t \t" << std::endl;
 
     // create network and set params, which initializes layers
     NeuralNet DigitNet;
     DigitNet.addLayer(new NeuralTanhLayer(INPUT, HIDDEN_1));
     DigitNet.addLayer(new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT));
-    DigitNet.init(learningRate, momentum, decayRate, dropoutRate, FROZEN_SEED);
+    DigitNet.init(learningRate, momentum, decayRate, dropoutRate, thisSeed);
 
     // load data
-    DataLoader loader(dataFilePath, labelLength, dataPtLength, dataScaleFactor, dataLimitRatio);
+    DataLoader* loader(new DataLoader(dataFilePath, labelLength, dataPtLength, dataScaleFactor,
+                                      dataLimitRatio, testValidateRatio));
+    DataMap_t* holdout = loader->extractHoldoutSet();
 
     // train
+    std::cout << std::endl;
     std::cout << "training network..." << "\t \t" << std::endl;
+    std::cout << "epochs: " << epochs << std::endl;
+    std::cout << "data points/epoch: " << loader->numTrainPoints() << std::endl;
+    std::cout << "total points: " << epochs * loader->numTrainPoints() << std::endl;
 
     int times = int(time(nullptr));
-    auto evalData = DigitNet.train(&loader, epochs, shuffleData);
+    auto evalData = DigitNet.train(loader, epochs, shuffleData);
     int timed = int(time(nullptr));
     times = timed - times;
 
@@ -65,16 +72,18 @@ int main()
     std::cout << "training error: " << "\t \t" << evalData.second << std::endl;
 
     // test
-    std::cout << "test points: " << "\t \t \t" << loader.numTestPoints() << std::endl;
+    std::cout << std::endl;
     std::cout << "testing network..." << "\t \t" << std::endl;
+    std::cout << "test points: " << "\t \t \t" << holdout->size() << std::endl;
 
     times = int(time(nullptr));
-    double testAccuracy = DigitNet.test(&loader);
+    double testAccuracy = DigitNet.test(holdout);
     timed = int(time(nullptr));
     times = timed - times;
 
     std::cout << "testing time: " << "\t \t \t" << times << " seconds " << std::endl;
     std::cout << "test accuracy: " << "\t \t \t" << testAccuracy << "% " << std::endl;
+    std::cout << "seed used: " << thisSeed << std::endl;
 }
 
 void printDigit(const vecIntType label, std::vector<double>& data)

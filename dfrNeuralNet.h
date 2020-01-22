@@ -31,6 +31,7 @@ public:
     double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
 
     double test(DataLoader* dataset);
+    double test(DataMap_t* data);
     std::vector<double> runNet(const std::vector<double>& data);
     
     bool saveNet(const char * filename=nullptr);
