@@ -81,11 +81,11 @@ std::pair<double, double> NeuralNet::train(DataLoader* dataset, const unsigned l
             auto label = thisPt.first[0];
             auto data = thisPt.second;
             std::vector<double> nLabel = encodeOneHot(vecIntType(label));
-            std::vector<double> outputs = runNet(data);
-            error = trainNet(data, nLabel);
+            auto netOut = trainNet(data, nLabel);
+            error = netOut.first;
 
             // decode output and compare to correct output
-            if (decodeOneHot(outputs) == vecIntType(label)) {
+            if (decodeOneHot(netOut.second) == vecIntType(label)) {
                 trueCount++;
             }
         }
@@ -94,17 +94,17 @@ std::pair<double, double> NeuralNet::train(DataLoader* dataset, const unsigned l
     return std::make_pair(accuracy, error);
 }
 
-double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput)
+std::pair<double, std::vector<double>> NeuralNet::trainNet(const std::vector<double>& data, const std::vector<double>& trainingOutput)
 { 
     vecIntType outputLayer = m_layers.size();
 
     std::vector<double> output, error, delta, prevOut, nextDeltas;
-    double cost = 0.0;
+    double loss = 0.0;
 
     // run net forward
     output = runNet(data);
     error = computeError(output, trainingOutput);
-    cost = (m_outType == SCALAR) ? computeMSE(error) : logLoss(output, trainingOutput);
+    loss = (m_outType == SCALAR) ? computeMSE(error) : logLoss(output, trainingOutput);
 
     // propagate error backward through layers
     for (vecIntType i=outputLayer; i>0; i--) {
@@ -118,7 +118,7 @@ double NeuralNet::trainNet(const std::vector<double>& data, const std::vector<do
         m_layers[i-1]->updateWeights(prevOut, delta, m_learningRate, m_momentum, m_weightDecay);
         error = delta;
     }
-    return cost;
+    return std::make_pair(loss, output);
 }
 
 double NeuralNet::test(DataLoader* dataset)

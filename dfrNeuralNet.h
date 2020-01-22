@@ -29,7 +29,7 @@ public:
               const unsigned weightInitType=SQRT);
     
     std::pair<double, double> train(DataLoader* dataset, const unsigned long epochs, const bool shuffleData);
-    double trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
+    std::pair<double, std::vector<double>> trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
 
     double test(DataLoader* dataset);
     double test(DataMap_t* data);

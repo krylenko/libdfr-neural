@@ -43,9 +43,10 @@ int main(int, char**)
             exor.pop_back();
             break;
         }
-        std::vector<double> outputs = network.runNet(exor);
-        error = network.trainNet(exor, training);
+        auto netOut = network.trainNet(exor, training);
+        error = netOut.first;
         /*
+        auto outputs = netOut.second;
         switch(network.outType())
         {
         case SCALAR:
