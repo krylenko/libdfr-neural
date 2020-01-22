@@ -5,7 +5,7 @@
 #include <vector>
 
 // layer type enum
-enum{LINEAR, TANH, SIGMOID, SOFTMAX};
+enum{LINEAR, RELU, SIGMOID, SOFTMAX, TANH};
 
 // weight initialization type enum
 enum{SQRT, TRUNC_NORM};
@@ -35,7 +35,7 @@ public:
 
     virtual void initLayer(const unsigned weightInitType);
 
-    virtual std::vector<double> computeOutputs(const std::vector<double>& inputs, const bool training, const double dropoutRate);
+    virtual void computeOutputs(const std::vector<double>& inputs, const bool training, const double dropoutRate);
 
     virtual std::vector<double> computeDeltas(const std::vector<double>& error,
                                               const std::vector<std::vector<double> >& nextWeights);
@@ -44,6 +44,9 @@ public:
                                const double learningRate, const double momentum, const double decayRate);
 
 protected:
+
+    virtual void activation() {}
+    virtual double outGrad(const double output);
   
     vecIntType m_type;
     vecIntType m_numInputs;

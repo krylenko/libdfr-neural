@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <cmath>
 #include <iostream>
+
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralSoftmaxLayer.h"
 
@@ -13,31 +15,19 @@ NeuralSoftmaxLayer::~NeuralSoftmaxLayer()
 {
 }
 
-std::vector<double> NeuralSoftmaxLayer::computeOutputs(const std::vector<double>& inputs,
-                                                       const bool training, const double dropoutRate)
+void NeuralSoftmaxLayer::activation()
 {
-    std::vector<double> outs(m_numNodes);
-    outs = NeuralLayer::computeOutputs(inputs, training, dropoutRate);
     double normalizer = 0.0;
-    for (std::vector<double>::iterator it=outs.begin(); it!=outs.end(); ++it) {
-        normalizer += exp(*it);
-    }
-    for (std::vector<double>::iterator it=outs.begin(); it!=outs.end(); ++it) {
-        *it = exp(*it)/normalizer;
-    }
-    m_output = outs;
-    return outs;
-}
+    std::vector<double> expd(m_output.size(), 0.0);
 
-void NeuralSoftmaxLayer::updateWeights(const std::vector<double>& prevOut, const std::vector<double>& deltas,
-                                       const double learningRate, const double momentum, const double decayRate)
-{
-    for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
-        for (vecIntType j = 0; j < m_numNodes; ++j) {
-            double prev = (i == 0) ? 1.0 : prevOut[i-1];
-            double deltaW = learningRate * (deltas[j] * prev - (decayRate * m_weights[i][j]));
-            m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
-            m_nextDeltas[i][j] = deltaW;
-        }
+    // compute normalization denom, save exponentiated values for later
+    for (unsigned long i = 0; i < m_output.size(); ++i) {
+        auto thisExp = exp(m_output[i]);
+        normalizer += thisExp;
+        expd[i] = thisExp;
+    }
+    // reuse exponentiated values to update outputs
+    for (unsigned long p = 0; p < m_output.size(); ++p) {
+        m_output[p] = expd[p] / normalizer;
     }
 }

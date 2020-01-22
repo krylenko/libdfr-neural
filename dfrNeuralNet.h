@@ -7,6 +7,7 @@
 #include "dfrNeuralLayer.h"
 #include "dfrNeuralLinearLayer.h"
 #include "dfrNeuralTanhLayer.h"
+#include "dfrNeuralReLULayer.h"
 #include "dfrNeuralSigmoidLayer.h"
 #include "dfrNeuralSoftmaxLayer.h"
 #include "DataLoader.h"

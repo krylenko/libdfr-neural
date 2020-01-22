@@ -167,8 +167,10 @@ std::vector<double> NeuralNet::computeOutput(const std::vector<double>& inputs, 
 {
     std::vector<double> ins(inputs);
     std::vector<double> outs;
-    for (std::vector<NeuralLayer *>::iterator it=m_layers.begin(); it!=m_layers.end(); ++it) {
-        outs = (*it)->computeOutputs(ins, training, m_dropoutRate);
+    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
+        auto layer = *it;
+        layer->computeOutputs(ins, training, m_dropoutRate);
+        outs = layer->retrieveOutputs();
         ins = outs;
     }
     return outs;

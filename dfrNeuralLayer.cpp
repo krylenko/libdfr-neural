@@ -40,15 +40,14 @@ void NeuralLayer::initLayer(const unsigned weightInitType)
     }
 }
 
-std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& inputs,
-                                                const bool training, const double dropoutRate)
+void NeuralLayer::computeOutputs(const std::vector<double>& inputs, const bool training,
+                                 const double dropoutRate)
 {
     assert(m_numInputs == inputs.size());
-    std::vector<double> outputs(m_numNodes, 0.0);
     for (vecIntType j = 0; j < m_numNodes; ++j) {
-        outputs[j] = m_biases[j] * m_weights[0][j];
+        m_output[j] = m_biases[j] * m_weights[0][j];
         for (vecIntType i = 1; i < m_numInputs + 1; ++i) {
-            outputs[j] += inputs[i-1] * m_weights[i][j];
+            m_output[j] += inputs[i-1] * m_weights[i][j];
         }
     }
     // apply dropout and scale outputs to adjust magnitudes for dropped-out nodes
@@ -56,14 +55,13 @@ std::vector<double> NeuralLayer::computeOutputs(const std::vector<double>& input
         for (vecIntType k = 0; k < m_numNodes; ++k) {
             double dropoutRand = rand() / double(RAND_MAX);
                 if (dropoutRand >= dropoutRate) {
-                    outputs[k] /= dropoutRate;
+                    m_output[k] /= dropoutRate;
                 } else {
-                    outputs[k] = 0.0;
+                    m_output[k] = 0.0;
                 }
         }
     }
-    m_output = outputs;
-    return outputs;
+    activation();
 }
 
 std::vector<double> NeuralLayer::computeDeltas(const std::vector<double>& error, const std::vector<std::vector<double> >& nextWeights)
@@ -86,9 +84,16 @@ void NeuralLayer::updateWeights(const std::vector<double>& prevOut, const std::v
     for (vecIntType i = 0; i < m_numInputs + 1; ++i) {
         for (vecIntType j = 0; j < m_numNodes; ++j) {
             double prev = (i == 0) ? 1.0 : prevOut[i-1];
-            double deltaW = learningRate * (deltas[j] * prev - decayRate * m_weights[i][j]);
+            double deltaW = learningRate * (outGrad(m_output[j]) * deltas[j] * prev
+                                            - decayRate * m_weights[i][j]);
             m_weights[i][j] += deltaW + momentum * m_nextDeltas[i][j];
             m_nextDeltas[i][j] = deltaW;
         }
     }
+}
+
+double NeuralLayer::outGrad(const double output)
+{
+    // input argument isn't used here, but required for subclasses
+    return 1.0;
 }

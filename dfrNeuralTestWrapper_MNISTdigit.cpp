@@ -13,7 +13,7 @@
 #define FRAMESIZE       (28*28)
 #define INPUT           FRAMESIZE
 #define HIDDEN_1        200
-#define HIDDEN_2        200
+#define HIDDEN_2        64
 #define OUTPUT          10
 #define FROZEN_SEED     1029
 
@@ -26,7 +26,7 @@ int main()
     const double dataLimitRatio = 1.0;
     const double testValidateRatio = 1.0;
     const unsigned epochs = 6;
-    auto thisSeed = time(nullptr);
+    auto thisSeed = 1579647827; //time(nullptr);
 
     const unsigned long labelLength = 1;
     const unsigned long dataPtLength = INPUT;
