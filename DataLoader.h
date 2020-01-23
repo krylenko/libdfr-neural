@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 
 using DataPt_t = std::pair<std::vector<double>, std::vector<double>>;
@@ -17,7 +18,7 @@ public:
                const double limitFrac=1.0, const double trainValidateFrac=1.0);
     ~DataLoader();
 
-    DataMap_t* extractHoldoutSet(const double sizeFrac=0.1);
+    std::shared_ptr<DataMap_t> extractHoldoutSet(const double sizeFrac=0.1, const bool shuffle=true);
     void splitTrainTest(const bool shuffle=false);
 
     DataPt_t trainDataPoint();

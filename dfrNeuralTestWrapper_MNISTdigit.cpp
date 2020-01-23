@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <memory>
 #include <vector>
 #include <fstream>
 
@@ -25,7 +26,7 @@ int main()
     const std::string dataFilePath("../../lib/libdfr-neural/train.txt");
     const double dataLimitRatio = 1.0;
     const double testValidateRatio = 1.0;
-    const unsigned epochs = 6;
+    const unsigned epochs = 3;
     auto thisSeed = 1579647827; //time(nullptr);
 
     const unsigned long labelLength = 1;
@@ -51,9 +52,9 @@ int main()
     DigitNet.init(learningRate, momentum, decayRate, dropoutRate, thisSeed);
 
     // load data
-    DataLoader* loader(new DataLoader(dataFilePath, labelLength, dataPtLength, dataScaleFactor,
+    std::shared_ptr<DataLoader> loader(new DataLoader(dataFilePath, labelLength, dataPtLength, dataScaleFactor,
                                       dataLimitRatio, testValidateRatio));
-    DataMap_t* holdout = loader->extractHoldoutSet();
+    std::shared_ptr<DataMap_t> holdout = loader->extractHoldoutSet();
 
     // train
     std::cout << std::endl;

@@ -2,9 +2,9 @@
 
 #include <cassert>
 #include <cmath>
-#include <iostream>
-#include <fstream>
 #include <ctime>
+#include <fstream>
+#include <iostream>
 #include <sstream>
 
 double boundZeroOne(const double in)
@@ -69,7 +69,7 @@ double computeMSE(const std::vector<double>& error)
     return 0.5 * MSE;
 }
 
-std::pair<double, double> NeuralNet::train(DataLoader* dataset, const unsigned long epochs,
+std::pair<double, double> NeuralNet::train(std::shared_ptr<DataLoader> dataset, const unsigned long epochs,
                                            const bool shuffleData)
 {
     double error = 0.0;
@@ -121,7 +121,7 @@ std::pair<double, std::vector<double>> NeuralNet::trainNet(const std::vector<dou
     return std::make_pair(loss, output);
 }
 
-double NeuralNet::test(DataLoader* dataset)
+double NeuralNet::test(std::shared_ptr<DataLoader> dataset)
 {
     unsigned long trueCount = 0;
     for (vecIntType i = 0; i < dataset->numTestPoints(); ++i) {
@@ -139,7 +139,7 @@ double NeuralNet::test(DataLoader* dataset)
     return trueCount * 100. / dataset->numTestPoints();
 }
 
-double NeuralNet::test(DataMap_t* data)
+double NeuralNet::test(std::shared_ptr<DataMap_t> data)
 {
     unsigned long trueCount = 0;
     for (auto it = data->begin(); it != data->end(); ++it) {

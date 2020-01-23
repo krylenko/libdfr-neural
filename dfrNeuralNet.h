@@ -28,11 +28,11 @@ public:
               const double dropoutRate=1.0, const int randSeed=int(time(nullptr)),
               const unsigned weightInitType=SQRT);
     
-    std::pair<double, double> train(DataLoader* dataset, const unsigned long epochs, const bool shuffleData);
+    std::pair<double, double> train(std::shared_ptr<DataLoader> dataset, const unsigned long epochs, const bool shuffleData);
     std::pair<double, std::vector<double>> trainNet(const std::vector<double>& data, const std::vector<double>& labeledOutput);
 
-    double test(DataLoader* dataset);
-    double test(DataMap_t* data);
+    double test(std::shared_ptr<DataLoader> dataset);
+    double test(std::shared_ptr<DataMap_t> data);
     std::vector<double> runNet(const std::vector<double>& data);
     
     bool saveNet(const char * filename=nullptr);

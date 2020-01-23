@@ -127,21 +127,26 @@ void DataLoader::splitTrainTest(const bool shuffle)
     assert(numTestPts == testLen);
 }
 
-DataMap_t* DataLoader::extractHoldoutSet(const double sizeFrac)
+std::shared_ptr<DataMap_t> DataLoader::extractHoldoutSet(const double sizeFrac, const bool shuffle)
 {
-    // TODO: randomly select a holdout set instead of slicing off the end of allData
-    DataMap_t* holdout(new DataMap_t);
+    std::shared_ptr<DataMap_t> holdout(new DataMap_t);
     const unsigned long holdoutPts = static_cast<unsigned long>(sizeFrac * numPts);
-    const unsigned long fullSize = allData.size();
+    const unsigned long fullSizeIdx = allData.size() - 1;
+
+    unsigned long ptIdx = 0;
     for (unsigned long p = 0; p < holdoutPts; ++p) {
-        unsigned long ptIdx = (fullSize - 1) - p;
+        if (shuffle) {
+            ptIdx = static_cast<unsigned long>(fullSizeIdx * double(rand()) / RAND_MAX);
+            while (holdout->find(ptIdx) != holdout->end()) {
+                ptIdx = static_cast<unsigned long>(fullSizeIdx * double(rand()) / RAND_MAX);
+            }
+        } else {
+            ptIdx = fullSizeIdx - p;
+        }
         (*holdout)[ptIdx] = allData.at(ptIdx);
+        allData.erase(allData.find(ptIdx));
     }
-    allData.erase(allData.find(holdoutPts), allData.end());
     numPts = allData.size();
-    // verify that no elements of the holdout set are still present in the remaining data
-    for (auto it = holdout->begin(); it != holdout->end(); ++it) {
-        assert(allData.find(it->first) == allData.end());
-    }
+    splitTrainTest();
     return holdout;
 }
