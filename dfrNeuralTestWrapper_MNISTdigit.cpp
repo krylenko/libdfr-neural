@@ -16,7 +16,7 @@
 #define HIDDEN_1        200
 #define HIDDEN_2        64
 #define OUTPUT          10
-#define FROZEN_SEED     1579647827
+#define FROZEN_SEED     1579810812
 
 // fn prototypes
 void printDigit(const vecIntType label, std::vector<double>& data);
@@ -27,7 +27,7 @@ int main()
     const double dataLimitRatio = 1.0;
     const double testValidateRatio = 1.0;
     const unsigned epochs = 6;
-    auto thisSeed = time(nullptr);
+    auto thisSeed = FROZEN_SEED;
 
     const unsigned long labelLength = 1;
     const unsigned long dataPtLength = INPUT;
@@ -35,20 +35,21 @@ int main()
 
     const bool shuffleData = true;
 
-    const double learningRate = 0.05;
+    const double learningRate = 0.001;
     const double momentum =     0.0;
     const double decayRate =    0.0;
     const double dropoutRate =  0.5;
 
     std::cout << "initializing network..." << std::endl;
+    std::cout << "hidden neurons: " << "\t \t \t" << HIDDEN_1 << std::endl;
     std::cout << "learning rate: " << "\t \t \t" << learningRate << std::endl;
     std::cout << "momentum: " << "\t \t \t" << momentum << std::endl;
     std::cout << "weight decay: " << "\t \t \t" << decayRate << std::endl;
 
     // create network and set params, which initializes layers
     NeuralNet DigitNet;
-    DigitNet.addLayer(new NeuralTanhLayer(INPUT, HIDDEN_1));
-    DigitNet.addLayer(new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT));
+    DigitNet.addLayer(std::shared_ptr<NeuralLayer>(new NeuralTanhLayer(INPUT, HIDDEN_1)));
+    DigitNet.addLayer(std::shared_ptr<NeuralLayer>(new NeuralSoftmaxLayer(HIDDEN_1, OUTPUT)));
     DigitNet.init(learningRate, momentum, decayRate, dropoutRate, thisSeed);
 
     // load data

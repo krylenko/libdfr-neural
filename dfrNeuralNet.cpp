@@ -23,12 +23,9 @@ NeuralNet::NeuralNet()
 
 NeuralNet::~NeuralNet()
 {
-    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
-        delete *it;
-    }
 }
 
-void NeuralNet::addLayer(NeuralLayer * layer)
+void NeuralNet::addLayer(std::shared_ptr<NeuralLayer> layer)
 {
     m_layers.push_back(layer);
 }
@@ -44,7 +41,7 @@ void NeuralNet::init(const double learningRate, const double momentum, const dou
     // seed random number generator
     srand(unsigned(randSeed));
 
-    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
+    for (auto it = m_layers.begin(); it != m_layers.end(); ++it) {
         (*it)->initLayer(weightInitType);
         m_outType = (*it)->getType() == SOFTMAX ? PROB : SCALAR;
     }
@@ -167,7 +164,7 @@ std::vector<double> NeuralNet::computeOutput(const std::vector<double>& inputs, 
 {
     std::vector<double> ins(inputs);
     std::vector<double> outs;
-    for (std::vector<NeuralLayer *>::iterator it = m_layers.begin(); it != m_layers.end(); ++it) {
+    for (auto it = m_layers.begin(); it != m_layers.end(); ++it) {
         auto layer = *it;
         layer->computeOutputs(ins, training, m_dropoutRate);
         outs = layer->retrieveOutputs();
@@ -283,20 +280,20 @@ bool NeuralNet::loadNet(const char * filename)
                 inp >> weights[i][j];
             }
         }
-        NeuralLayer * pHiddenLayer = nullptr;
+        std::shared_ptr<NeuralLayer> pHiddenLayer;
         switch(type)
         {
         case(LINEAR):
-            pHiddenLayer = new NeuralLinearLayer(inputs, nodes);
+            pHiddenLayer = std::shared_ptr<NeuralLayer>(new NeuralLinearLayer(inputs, nodes));
             break;
         case(TANH):
-            pHiddenLayer = new NeuralTanhLayer(inputs, nodes);
+            pHiddenLayer = std::shared_ptr<NeuralLayer>(new NeuralTanhLayer(inputs, nodes));
             break;
         case(SIGMOID):
-            pHiddenLayer = new NeuralSigmoidLayer(inputs, nodes);
+            pHiddenLayer = std::shared_ptr<NeuralLayer>(new NeuralSigmoidLayer(inputs, nodes));
             break;
         case(SOFTMAX):
-            pHiddenLayer = new NeuralSoftmaxLayer(inputs, nodes);
+            pHiddenLayer = std::shared_ptr<NeuralLayer>(new NeuralSoftmaxLayer(inputs, nodes));
             break;
         }
         pHiddenLayer->loadWeights(weights);

@@ -23,7 +23,7 @@ public:
     NeuralNet();
     ~NeuralNet();
   
-    void addLayer(NeuralLayer * layer);
+    void addLayer(std::shared_ptr<NeuralLayer> layer);
     void init(const double learningRate, const double momentum, const double decayRate,
               const double dropoutRate=1.0, const int randSeed=int(time(nullptr)),
               const unsigned weightInitType=SQRT);
@@ -57,7 +57,7 @@ private:
     // convert 1-of-N float output matrix to single digit
     vecIntType decodeOneHot(std::vector<double>& netOut);
 
-    std::vector<NeuralLayer *> m_layers;
+    std::vector<std::shared_ptr<NeuralLayer>> m_layers;
     double m_learningRate;
     double m_momentum;
     double m_weightDecay;

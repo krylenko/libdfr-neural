@@ -14,8 +14,8 @@ int main(int, char**)
 
     // create network
     NeuralNet network;
-    network.addLayer(new NeuralTanhLayer(2, 12));
-    network.addLayer(new NeuralSoftmaxLayer(12, 2));
+    network.addLayer(std::shared_ptr<NeuralLayer>(new NeuralTanhLayer(2, 12)));
+    network.addLayer(std::shared_ptr<NeuralLayer>(new NeuralSoftmaxLayer(12, 2)));
 
     // set learning rate, momentum, decay rate, dropout rate
     network.init(0.01, 0, 0, 1.0);
