@@ -16,7 +16,7 @@
 #define HIDDEN_1        200
 #define HIDDEN_2        64
 #define OUTPUT          10
-#define FROZEN_SEED     1029
+#define FROZEN_SEED     1579647827
 
 // fn prototypes
 void printDigit(const vecIntType label, std::vector<double>& data);
@@ -26,8 +26,8 @@ int main()
     const std::string dataFilePath("../../lib/libdfr-neural/train.txt");
     const double dataLimitRatio = 1.0;
     const double testValidateRatio = 1.0;
-    const unsigned epochs = 3;
-    auto thisSeed = 1579647827; //time(nullptr);
+    const unsigned epochs = 6;
+    auto thisSeed = time(nullptr);
 
     const unsigned long labelLength = 1;
     const unsigned long dataPtLength = INPUT;
