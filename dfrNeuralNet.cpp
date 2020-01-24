@@ -306,7 +306,7 @@ bool NeuralNet::loadNet(const char * filename)
 // convert single input digit label into 1-of-N encoded matrix
 std::vector<double> NeuralNet::encodeOneHot(const vecIntType digit)
 {
-    std::vector<double> output(10, 0.);
+    std::vector<double> output(m_layers[m_layers.size()-1]->numNodes(), 0.);
     output[digit] = 1.;
     return output;
 }
@@ -314,8 +314,9 @@ std::vector<double> NeuralNet::encodeOneHot(const vecIntType digit)
 // convert 1-of-N float output matrix to single digit
 vecIntType NeuralNet::decodeOneHot(std::vector<double>& netOut)
 {
-    vecIntType digit = 0; double tmp = netOut[0];
-    for (vecIntType i = 0;i<10;++i) {
+    vecIntType digit = 0;
+    double tmp = netOut[0];
+    for (vecIntType i = 0; i < m_layers[m_layers.size()-1]->numNodes(); ++i) {
         if (netOut[i] > tmp) {
             digit = i;
             tmp = netOut[i];
